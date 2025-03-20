@@ -16,6 +16,7 @@ import Certificate from "./pages/Certificate";
 import Login from "./pages/Login";
 import Courses from "./pages/Courses";
 import CertificatesAdmin from "./pages/CertificatesAdmin";
+import StudentDashboard from "./pages/StudentDashboard"; // Nouvelle page
 
 function App() {
   // État pour le mode sombre/clair
@@ -54,6 +55,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
+          <Route path="/student-dashboard" element={<StudentDashboard toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           <Route path="/admin-dashboard" element={<AdminDashboard toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           <Route path="/admin-courses" element={<AdminCourses toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           <Route path="/admin-qcm" element={<AdminQCM toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />

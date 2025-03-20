@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -55,7 +55,7 @@ function HideOnScroll(props) {
 const Login = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const navigate = useNavigate(); // Hook pour la navigation
+  const navigate = useNavigate();
   
   // États pour la gestion des onglets (utilisateur vs admin)
   const [tabValue, setTabValue] = useState(0);
@@ -146,8 +146,8 @@ const Login = () => {
       // Simulation d'une requête API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Rediriger vers la page de progression utilisateur
-      navigate('/progress');
+      // Rediriger vers le tableau de bord étudiant au lieu de la page de progression
+      navigate('/student-dashboard');
       console.log('User login successful', { userEmail, birthDate });
     } catch (err) {
       setError('Identifiants incorrects. Veuillez réessayer.');
@@ -646,6 +646,16 @@ const Login = () => {
                   <Button 
                     variant="outlined"
                     fullWidth
+                    onClick={() => goToAdminPage('/student-dashboard')}
+                    sx={{ mb: 1 }}
+                  >
+                    Dashboard Étudiant
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button 
+                    variant="outlined"
+                    fullWidth
                     onClick={() => goToAdminPage('/admin-dashboard')}
                     sx={{ mb: 1 }}
                   >
@@ -690,6 +700,26 @@ const Login = () => {
                     sx={{ mb: 1 }}
                   >
                     Certificats
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button 
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => goToAdminPage('/progress')}
+                    sx={{ mb: 1 }}
+                  >
+                    Progression
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button 
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => goToAdminPage('/certificate')}
+                    sx={{ mb: 1 }}
+                  >
+                    Mes Certificats
                   </Button>
                 </Grid>
               </Grid>
