@@ -1,8 +1,10 @@
 const Certificate = require("../models/Certificate");
-const User = require("../models/User");
+const User = require("../models/user.model");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
+
+
 
 exports.getCompletedUsers = async (req, res) => {
   try {

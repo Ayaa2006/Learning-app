@@ -10,8 +10,10 @@ import Login from "./pages/Login";
 import AdminQCM from "./pages/AdminQCM";
 import Courses from "./pages/Courses";
 import CertificatesAdmin from "./pages/CertificatesAdmin";
-
-
+import ExamWithProctoring from './pages/ExamWithProctoring';
+import Demo from './pages/Demo';
+import Modules from './pages/Modules';
+import ModuleDetails from './pages/ModuleDetails';
 
 
 function App() {
@@ -27,6 +29,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/admin/certificats" element={<CertificatesAdmin />} />
+        <Route path="/ExamWithProctoring" element={<ExamWithProctoring />} />
+        <Route path="/Demo" element={<Demo/>} />
+        <Route path="/modules" element={<Modules />} />
+          <Route path="/modules/:moduleId" element={<ModuleDetails />} />
+          <Route path="*" element={<div>Page non trouvée</div>} />
       </Routes>
     </Router>
   );

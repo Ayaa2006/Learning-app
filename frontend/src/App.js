@@ -1,10 +1,9 @@
-// App.js avec toutes les routes admin
 import './index.css';
 import React, { useState, useMemo } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-
+import ExamWithProctoring from './pages/ExamWithProctoring';
 // Import des pages
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -17,6 +16,12 @@ import Login from "./pages/Login";
 import Courses from "./pages/Courses";
 import CertificatesAdmin from "./pages/CertificatesAdmin";
 import StudentDashboard from "./pages/StudentDashboard"; // Nouvelle page
+import WebcamTest from './pages/WebcamTest';
+import Demo from './pages/Demo';
+import Modules from './pages/Modules';
+import ModuleDetails from './pages/ModuleDetails';
+import ExamPage from './pages/ExamPage';
+
 
 function App() {
   // État pour le mode sombre/clair
@@ -65,6 +70,17 @@ function App() {
           <Route path="/login" element={<Login toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           <Route path="/courses" element={<Courses toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           <Route path="/admin/certificats" element={<CertificatesAdmin toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
+          <Route path="/ExamWithProctoring" element={<ExamWithProctoring />} />
+          <Route path="/webcam-test" element={<WebcamTest />} />
+          <Route path="/Demo" element={<Demo />} />
+          <Route path="/" element={<Modules />} />
+          <Route path="/modules" element={<Modules />} />
+          <Route path="/modules/:moduleId" element={<ModuleDetails />} />
+          <Route path="*" element={<div>Page non trouvée</div>} />
+          <Route path="/ExamPage" element={<ExamPage />} />
+      
+          
+
         </Routes>
       </Router>
     </ThemeProvider>
