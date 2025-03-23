@@ -18,7 +18,8 @@ import {
   IconButton,
   Tooltip,
   Chip,
-  Stack
+  Stack,
+  Avatar
 } from '@mui/material';
 import { 
   Person as PersonIcon, 
@@ -30,19 +31,24 @@ import {
   TrendingUp as TrendingUpIcon,
   Group as GroupIcon,
   Visibility as VisibilityIcon,
-  Mail as MailIcon
+  Mail as MailIcon,
+  Logout as LogoutIcon,
+  Settings as SettingsIcon,
+  AccountCircle as AccountCircleIcon
 } from '@mui/icons-material';
 import AdminLayout from '../components/layouts/AdminLayout';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { mockStatistics, mockUsers, mockModules, mockCheatAttempts } from '../data/mockData';
 
 const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
-  const { userRole, user, hasPermission, ROLES } = useAuth();
+  const { userRole, user, hasPermission, ROLES, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [recentUsers, setRecentUsers] = useState([]);
   const [popularModules, setPopularModules] = useState([]);
   const [cheatAttempts, setCheatAttempts] = useState([]);
+  const navigate = useNavigate();
   
   // Simuler le chargement des données
   useEffect(() => {
@@ -112,6 +118,12 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
     
     fetchData();
   }, [userRole, ROLES]);
+  
+  // Fonction de déconnexion
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   
   // Composant pour les cartes statistiques
   const StatCard = ({ icon, value, label, color }) => (
@@ -206,10 +218,120 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                 </Grid>
               </Grid>
               
-              {/* Deux colonnes de contenus */}
+              {/* Trois colonnes de contenus */}
               <Grid container spacing={4}>
                 {/* Colonne de gauche */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
+                  {/* Carte Profil et Déconnexion */}
+                  <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+                        Mon Profil
+                      </Typography>
+                      <IconButton size="small">
+                        <SettingsIcon />
+                      </IconButton>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+                      <Avatar 
+                        sx={{ 
+                          width: 80, 
+                          height: 80, 
+                          mb: 2,
+                          bgcolor: userRole === ROLES.ADMIN ? '#f44336' : '#4caf50'
+                        }}
+                      >
+                        {user?.name?.charAt(0) || <AccountCircleIcon />}
+                      </Avatar>
+                      
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        {user?.name || 'Utilisateur'}
+                      </Typography>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        {user?.email || 'email@exemple.com'}
+                      </Typography>
+                      
+                      <Chip 
+                        label={userRole === ROLES.ADMIN ? 'Administrateur système' : 'Professeur'} 
+                        color={userRole === ROLES.ADMIN ? 'error' : 'success'}
+                        size="small"
+                        sx={{ mb: 3 }}
+                      />
+                    </Box>
+                    
+                    <Divider sx={{ mb: 3 }} />
+                    
+                    <Button
+                      variant="contained"
+                      color="error"
+                      fullWidth
+                      startIcon={<LogoutIcon />}
+                      onClick={handleLogout}
+                      sx={{ 
+                        py: 1.5,
+                        borderRadius: 2,
+                        mb: 1
+                      }}
+                    >
+                      Déconnexion
+                    </Button>
+                  </Paper>
+
+                  <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+                        Modules Populaires
+                      </Typography>
+                      {hasPermission('viewModules') && (
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          startIcon={<SchoolIcon />}
+                        >
+                          Tous les modules
+                        </Button>
+                      )}
+                    </Box>
+                    <List>
+                      {popularModules.length > 0 ? (
+                        popularModules.map((module) => (
+                          <React.Fragment key={module.id}>
+                            <ListItem>
+                              <ListItemText 
+                                primary={(
+                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Typography variant="body1">{module.title}</Typography>
+                                    <Chip 
+                                      size="small" 
+                                      label={`${module.completionRate}%`}
+                                      sx={{ 
+                                        bgcolor: module.completionRate > 75 ? '#e8f5e9' : '#fff3e0',
+                                        color: module.completionRate > 75 ? '#2e7d32' : '#e65100'
+                                      }}
+                                    />
+                                  </Box>
+                                )} 
+                                secondary={`${module.enrolledStudents} étudiants • ${module.completionRate}% taux de complétion`}
+                              />
+                            </ListItem>
+                            <Divider component="li" />
+                          </React.Fragment>
+                        ))
+                      ) : (
+                        <Box sx={{ textAlign: 'center', py: 2 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Aucun module disponible
+                          </Typography>
+                        </Box>
+                      )}
+                    </List>
+                  </Paper>
+                </Grid>
+                
+                {/* Colonne du milieu */}
+                <Grid item xs={12} md={4}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
@@ -267,59 +389,6 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Modules Populaires
-                      </Typography>
-                      {hasPermission('viewModules') && (
-                        <Button 
-                          variant="outlined" 
-                          size="small"
-                          startIcon={<SchoolIcon />}
-                        >
-                          Tous les modules
-                        </Button>
-                      )}
-                    </Box>
-                    <List>
-                      {popularModules.length > 0 ? (
-                        popularModules.map((module) => (
-                          <React.Fragment key={module.id}>
-                            <ListItem>
-                              <ListItemText 
-                                primary={(
-                                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography variant="body1">{module.title}</Typography>
-                                    <Chip 
-                                      size="small" 
-                                      label={`${module.completionRate}%`}
-                                      sx={{ 
-                                        bgcolor: module.completionRate > 75 ? '#e8f5e9' : '#fff3e0',
-                                        color: module.completionRate > 75 ? '#2e7d32' : '#e65100'
-                                      }}
-                                    />
-                                  </Box>
-                                )} 
-                                secondary={`${module.enrolledStudents} étudiants • ${module.completionRate}% taux de complétion`}
-                              />
-                            </ListItem>
-                            <Divider component="li" />
-                          </React.Fragment>
-                        ))
-                      ) : (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Aucun module disponible
-                          </Typography>
-                        </Box>
-                      )}
-                    </List>
-                  </Paper>
-                </Grid>
-                
-                {/* Colonne de droite */}
-                <Grid item xs={12} md={6}>
-                  <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
                         Incidents récents de triche
                       </Typography>
                       {hasPermission('viewCheatDetection') && (
@@ -365,7 +434,10 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                       </Box>
                     )}
                   </Paper>
-                  
+                </Grid>
+                
+                {/* Colonne de droite */}
+                <Grid item xs={12} md={4}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
