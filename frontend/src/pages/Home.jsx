@@ -80,7 +80,7 @@ const Home = () => {
       id: 1,
       title: 'Intelligence Artificielle: Fondamentaux',
       description: 'Découvrez les concepts clés de lIA, des algorithmes fondamentaux aux applications modernes.',
-      image: '/images/ai-module.jpg',
+      image: '/images/bck7.png',
       duration: '12 heures',
       level: 'Intermédiaire',
       students: 4500
@@ -89,7 +89,7 @@ const Home = () => {
       id: 2,
       title: 'Développement Web Full-Stack',
       description: 'Maîtrisez les technologies front-end et back-end pour créer des applications web complètes.',
-      image: '/images/webdev-module.jpg',
+      image: '/images/bck11.png',
       duration: '24 heures',
       level: 'Avancé',
       students: 6200
@@ -98,7 +98,7 @@ const Home = () => {
       id: 3,
       title: 'Data Science & Visualisation',
       description: 'Apprenez à analyser et visualiser des données complexes pour en extraire des insights pertinents.',
-      image: '/images/dataviz-module.jpg',
+      image: '/images/bck2.png',
       duration: '16 heures',
       level: 'Intermédiaire',
       students: 5800
@@ -221,7 +221,7 @@ const Home = () => {
                   <Button component={Link} to="/courses" color="inherit">Cours</Button>
                   <Button component={Link} to="/certifications" color="inherit">Certifications</Button>
                   <Button component={Link} to="/about" color="inherit">À propos</Button>
-                  <Button component={Link} to="/pricing" color="inherit">Tarifs</Button>
+                  <Button component={Link} to="/pages/Home" color="inherit">Home</Button>
                 </Box>
               )}
               
@@ -322,128 +322,152 @@ const Home = () => {
           )}
         </AppBar>
 
-        {/* Hero Section */}
-        <Box 
-          component="section"
-          sx={{ 
-            position: 'relative', 
-            overflow: 'hidden',
-            py: { xs: 6, md: 12 },
-            background: 'linear-gradient(135deg, rgba(10,14,23,0.95) 0%, rgba(19, 39, 67, 0.95) 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            color: '#fff'
-          }}
-        >
-          <Container maxWidth="lg">
-            <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={6}>
-                <Box sx={{ position: 'relative', zIndex: 2 }}>
-                  <Typography 
-                    variant="h2" 
-                    component="h1" 
-                    sx={{ 
-                      fontWeight: 800,
-                      fontSize: { xs: '2.5rem', md: '3.5rem' },
-                      mb: 2,
-                      background: 'linear-gradient(90deg, #ff9900, #ff5500)',
-                      backgroundClip: 'text',
-                      textFillColor: 'transparent',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      display: 'inline-block'
-                    }}
-                  >
-                    Transformez vos compétences, construisez votre avenir
-                  </Typography>
-                  
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      mb: 4,
-                      color: 'rgba(255,255,255,0.9)',
-                      fontWeight: 400,
-                      lineHeight: 1.5
-                    }}
-                  >
-                    SkillPath offre des parcours d'apprentissage structurés, conçus par des experts et validés par l'industrie.
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4 }}>
-                    <Button 
-                      variant="contained" 
-                      size="large"
-                      startIcon={<SchoolIcon />}
-                      sx={{ 
-                        bgcolor: theme.palette.primary.main, 
-                        color: darkMode ? darkMode : '#0a0e17',
-                        px: 3,
-                        py: 1.5,
-                        fontSize: '1rem'
-                      }}
-                      component={Link}
-                      to="/register"
-                    >
-                      Commencer gratuitement
-                    </Button>
-                    
-                    <Button 
-                      variant="outlined" 
-                      size="large"
-                      startIcon={<PlayArrowIcon />}
-                      sx={{ 
-                        borderColor: 'rgba(255,255,255,0.6)', 
-                        color: 'rgba(255,255,255,0.9)',
-                        px: 3,
-                        py: 1.5,
-                        fontSize: '1rem'
-                      }}
-                      component={Link}
-                      to="/Demo"
-                    >
-                      Voir la démo
-                    </Button>
-                  </Box>
-                  
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
-                      <Typography>Certifications reconnues</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
-                      <Typography>Accès illimité</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
-                      <Typography>Mise à jour continue</Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Box 
-                  component="img"
-                  src="/images/background.jpeg"
-                  alt="Apprentissage en ligne"
-                  sx={{ 
-                    width: '100%',
-                    maxWidth: '560px',
-                    display: 'block',
-                    mx: 'auto',
-                    borderRadius: '12px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                    transform: 'perspective(1500px) rotateY(-15deg)',
-                    transition: 'transform 0.5s ease-in-out',
-                    '&:hover': {
-                      transform: 'perspective(1500px) rotateY(-5deg)'
-                    }
-                  }}
-                />
-              </Grid>
-            </Grid>
+        {/* Hero Section with Blurred Background */}
+<Box 
+  component="section"
+  sx={{ 
+    position: 'relative', 
+    overflow: 'hidden',
+    py: { xs: 2, md: 6 },
+    color: '#fff'
+  }}
+>
+  {/* Image d'arrière-plan floue */}
+  <Box 
+    sx={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundImage: 'url("/images/bck.png")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      filter: 'blur(5px)', // Effet de flou
+      transform: 'scale(1.1)', // Légèrement agrandi pour éviter les bords blancs
+      zIndex: 0
+    }}
+  />
+  
+  {/* Overlay sombre pour améliorer la lisibilité */}
+  <Box 
+    sx={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(10, 14, 23, 0.6)', // Overlay semi-transparent
+      zIndex: 1
+    }}
+  />
+
+  <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+    <Grid container spacing={4} alignItems="center">
+      <Grid item xs={12} md={6}>
+        <Box>
+          <Typography 
+            variant="h2" 
+            component="h1" 
+            sx={{ 
+              fontWeight: 800,
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              mb: 2,
+              background: 'linear-gradient(90deg, #ff9900, #ff5500)',
+              backgroundClip: 'text',
+              textFillColor: 'transparent',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'inline-block'
+            }}
+          >
+            Transformez vos compétences, construisez votre avenir
+          </Typography>
+          
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              mb: 4,
+              color: 'rgba(255,255,255,0.9)',
+              fontWeight: 400,
+              lineHeight: 1.5
+            }}
+          >
+            SkillPath offre des parcours d'apprentissage structurés, conçus par des experts et validés par l'industrie.
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4 }}>
+            <Button 
+              variant="contained" 
+              size="large"
+              startIcon={<SchoolIcon />}
+              sx={{ 
+                bgcolor: theme.palette.primary.main, 
+                color: darkMode ? darkMode : '#0a0e17',
+                px: 3,
+                py: 1.5,
+                fontSize: '1rem'
+              }}
+              component={Link}
+              to="/register"
+            >
+              Commencer gratuitement
+            </Button>
             
+            <Button 
+              variant="outlined" 
+              size="large"
+              startIcon={<PlayArrowIcon />}
+              sx={{ 
+                borderColor: 'rgba(255,255,255,0.6)', 
+                color: 'rgba(255,255,255,0.9)',
+                px: 3,
+                py: 1.5,
+                fontSize: '1rem'
+              }}
+              component={Link}
+              to="/Demo"
+            >
+              Voir la démo
+            </Button>
+          </Box>
+          
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
+              <Typography>Certifications reconnues</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
+              <Typography>Accès illimité</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CheckCircleIcon color="primary" sx={{ mr: 1 }} />
+              <Typography>Mise à jour continue</Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Grid>
+      
+      <Grid item xs={12} md={6}>
+        <Box 
+          alt="Apprentissage en ligne"
+          sx={{ 
+            width: '100%',
+            maxWidth: '560px',
+            display: 'block',
+            mx: 'auto',
+            borderRadius: '12px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            transform: 'perspective(1500px) rotateY(-15deg)',
+            transition: 'transform 0.5s ease-in-out',
+            '&:hover': {
+              transform: 'perspective(1500px) rotateY(-5deg)'
+            }
+          }}
+        />
+      </Grid>
+    </Grid>
             {/* Statistiques */}
             <Box 
               sx={{ 

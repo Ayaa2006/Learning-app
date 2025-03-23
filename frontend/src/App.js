@@ -78,6 +78,7 @@ function App() {
           <Route path="/modules/:moduleId" element={<ModuleDetails />} />
           <Route path="*" element={<div>Page non trouvée</div>} />
           <Route path="/ExamPage" element={<ExamPage />} />
+          <Route path="/Modules" element={<Modules />} />
       
           
 
