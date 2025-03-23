@@ -252,14 +252,6 @@ const Home = () => {
                     >
                       Connexion
                     </Button>
-                    <Button
-                      variant="contained"
-                      sx={{ bgcolor: theme.palette.primary.main, color: darkMode ? darkMode : '#0a0e17' }}
-                      component={Link}
-                      to="/register"
-                    >
-                      S'inscrire
-                    </Button>
                   </>
                 )}
               </Box>
@@ -409,9 +401,9 @@ const Home = () => {
                 fontSize: '1rem'
               }}
               component={Link}
-              to="/register"
+              to="/login"
             >
-              Commencer gratuitement
+              Commencer le parcours
             </Button>
             
             <Button 

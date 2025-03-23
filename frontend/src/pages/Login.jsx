@@ -13,33 +13,30 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
-  AppBar,
-  Toolbar,
-  Menu,
-  MenuItem,
-  useScrollTrigger,
-  Slide,
   Tabs,
   Tab,
   Paper,
-  Switch,
-  Tooltip,
   ThemeProvider,
   createTheme,
-  CssBaseline
+  CssBaseline,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
-  Google as GoogleIcon,
-  Apple as AppleIcon,
   School as SchoolIcon,
   Person as PersonIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
-  Menu as MenuIcon,
-  ExpandMore as ExpandMoreIcon
+  SupervisorAccount as SupervisorIcon,
+  AdminPanelSettings as AdminIcon,
+  AccountCircle as StudentIcon
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/common/Logo';
 
 const Login = () => {
@@ -49,32 +46,32 @@ const Login = () => {
     return savedMode ? JSON.parse(savedMode) : false; // Par défaut en mode clair
   });
   
+  const { login, ROLES } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   
-  // États pour la gestion des onglets (utilisateur vs admin)
+  // États pour la gestion des onglets
   const [tabValue, setTabValue] = useState(0);
   
-  // États pour la connexion utilisateur
-  const [userEmail, setUserEmail] = useState('');
+  // États pour la connexion étudiant
+  const [studentEmail, setStudentEmail] = useState('');
   const [birthDate, setBirthDate] = useState('');
   
-  // États pour la connexion admin
+  // États pour la connexion admin/prof
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [adminRole, setAdminRole] = useState(ROLES.ADMIN); // Par défaut, administrateur système
   
   // États partagés
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState(false);
   
   // Style constants
   const primaryColor = '#ff9900'; // Orange comme accent
   const darkText = '#0a0e17';
   
-  // États pour le header
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [modulesMenuAnchor, setModulesMenuAnchor] = useState(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Définition du thème en fonction du mode
@@ -119,36 +116,6 @@ const Login = () => {
     setDarkMode(!darkMode);
   };
 
-  // Fonction pour cacher le header lors du défilement vers le bas
-  function HideOnScroll(props) {
-    const { children } = props;
-    const trigger = useScrollTrigger();
-
-    return (
-      <Slide appear={false} direction="down" in={!trigger}>
-        {children}
-      </Slide>
-    );
-  }
-
-  // Gestion du menu des modules
-  const handleModulesMenuOpen = (event) => {
-    setModulesMenuAnchor(event.currentTarget);
-  };
-
-  const handleModulesMenuClose = () => {
-    setModulesMenuAnchor(null);
-  };
-
-  // Gestion du menu mobile
-  const handleMobileMenuOpen = () => {
-    setMobileMenuOpen(true);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMenuOpen(false);
-  };
-
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -159,11 +126,11 @@ const Login = () => {
     setError(''); // Réinitialiser les erreurs lors du changement d'onglet
   };
 
-  // Connexion utilisateur avec email académique et date de naissance
-  const handleUserLogin = async (e) => {
+  // Connexion étudiant avec email académique et date de naissance
+  const handleStudentLogin = async (e) => {
     e.preventDefault();
     
-    if (!userEmail) {
+    if (!studentEmail) {
       setError('Veuillez entrer votre email académique');
       return;
     }
@@ -180,9 +147,25 @@ const Login = () => {
       // Simulation d'une requête API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Rediriger vers le tableau de bord étudiant au lieu de la page de progression
-      navigate('/student-dashboard');
-      console.log('User login successful', { userEmail, birthDate });
+      // Créer un objet utilisateur avec les informations de l'étudiant
+      const userData = {
+        id: Math.floor(Math.random() * 10000),
+        email: studentEmail,
+        name: studentEmail.split('@')[0], // Simulation d'un nom à partir de l'email
+        birthDate: birthDate,
+        role: ROLES.STUDENT
+      };
+      
+      // Connexion via le contexte d'authentification
+      const loginSuccess = login(userData, ROLES.STUDENT);
+      
+      if (loginSuccess) {
+        setLoginSuccess(true);
+        // Rediriger vers le tableau de bord étudiant
+        navigate('/student-dashboard');
+      } else {
+        setError('Échec de la connexion. Veuillez réessayer.');
+      }
     } catch (err) {
       setError('Identifiants incorrects. Veuillez réessayer.');
     } finally {
@@ -190,7 +173,7 @@ const Login = () => {
     }
   };
 
-  // Connexion administrateur avec email académique et mot de passe
+  // Connexion administrateur ou professeur
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     
@@ -211,9 +194,24 @@ const Login = () => {
       // Simulation d'une requête API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Rediriger vers le tableau de bord admin
-      navigate('/admin-dashboard');
-      console.log('Admin login successful', { adminEmail, adminPassword });
+      // Créer un objet utilisateur avec les informations de l'admin/prof
+      const userData = {
+        id: Math.floor(Math.random() * 10000),
+        email: adminEmail,
+        name: adminEmail.split('@')[0], // Simulation d'un nom à partir de l'email
+        role: adminRole
+      };
+      
+      // Connexion via le contexte d'authentification
+      const loginSuccess = login(userData, adminRole);
+      
+      if (loginSuccess) {
+        setLoginSuccess(true);
+        // Rediriger vers le tableau de bord approprié
+        navigate('/admin-dashboard');
+      } else {
+        setError('Échec de la connexion. Veuillez réessayer.');
+      }
     } catch (err) {
       setError('Identifiants administrateur incorrects. Veuillez réessayer.');
     } finally {
@@ -221,8 +219,8 @@ const Login = () => {
     }
   };
 
-  // Fonction pour accéder directement aux pages d'administration (pour test seulement)
-  const goToAdminPage = (page) => {
+  // Fonction pour accéder directement aux pages (pour test seulement)
+  const goToPage = (page) => {
     navigate(page);
   };
 
@@ -230,162 +228,39 @@ const Login = () => {
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* Header avec mode sombre/clair comme sur la page d'accueil */}
-        <AppBar position="sticky" color="default" elevation={0} sx={{ backdropFilter: 'blur(8px)', backgroundColor: darkMode ? 'rgba(17, 22, 35, 0.8)' : 'rgba(255, 255, 255, 0.8)' }}>
-          <Container maxWidth="xl">
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              {/* Logo */}
-              <Typography variant="h5" component={Link} to="/" sx={{ fontWeight: 'bold', color: 'text.primary', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                Skill<span style={{ color: appTheme.palette.primary.main }}>Path</span>
-              </Typography>
-              
-              {/* Menu Desktop */}
-              {!isMobile && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Button 
-                    component={Link} 
-                    to="/modules" 
-                    color="inherit"
-                    endIcon={<ExpandMoreIcon />}
-                    onClick={handleModulesMenuOpen}
-                  >
-                    Modules
-                  </Button>
-                  <Menu
-                    anchorEl={modulesMenuAnchor}
-                    open={Boolean(modulesMenuAnchor)}
-                    onClose={handleModulesMenuClose}
-                    MenuListProps={{
-                      'aria-labelledby': 'modules-button',
-                    }}
-                  >
-                    <MenuItem onClick={handleModulesMenuClose} component={Link} to="/modules/programming">Programmation</MenuItem>
-                    <MenuItem onClick={handleModulesMenuClose} component={Link} to="/modules/design">Design</MenuItem>
-                    <MenuItem onClick={handleModulesMenuClose} component={Link} to="/modules/business">Business</MenuItem>
-                  </Menu>
-                  <Button component={Link} to="/courses" color="inherit">Cours</Button>
-                  <Button component={Link} to="/exams" color="inherit">Examens</Button>
-                  <Button component={Link} to="/certifications" color="inherit">Certificats</Button>
-                  <Button component={Link} to="/about" color="inherit">À propos</Button>
-                </Box>
-              )}
-              
-              {/* Actions */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {/* Toggle Theme */}
-                <Tooltip title={darkMode ? "Passer au mode clair" : "Passer au mode sombre"}>
-                  <IconButton onClick={toggleDarkMode} color="inherit">
-                    {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-                  </IconButton>
-                </Tooltip>
-                
-                {/* Mobile Menu Button */}
-                {isMobile && (
-                  <IconButton onClick={handleMobileMenuOpen} color="inherit">
-                    <MenuIcon />
-                  </IconButton>
-                )}
-                
-                {/* Auth Buttons */}
-                {!isMobile && (
-                  <>
-                    <Button
-                      variant="outlined"
-                      sx={{ borderColor: appTheme.palette.primary.main, color: appTheme.palette.primary.main }}
-                      component={Link}
-                      to="/login"
-                    >
-                      Connexion
-                    </Button>
-                    <Button
-                      variant="contained"
-                      sx={{ bgcolor: appTheme.palette.primary.main, color: darkMode ? darkMode : '#0a0e17' }}
-                      component={Link}
-                      to="/register"
-                    >
-                      S'inscrire
-                    </Button>
-                  </>
-                )}
-              </Box>
-            </Toolbar>
-          </Container>
-          
-          {/* Mobile Menu */}
-          {isMobile && mobileMenuOpen && (
-            <Paper sx={{ width: '100%', p: 2, borderTop: `1px solid ${appTheme.palette.divider}` }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <MenuItem component={Link} to="/modules" onClick={handleMobileMenuClose}>Modules</MenuItem>
-                <MenuItem component={Link} to="/courses" onClick={handleMobileMenuClose}>Cours</MenuItem>
-                <MenuItem component={Link} to="/exams" onClick={handleMobileMenuClose}>Examens</MenuItem>
-                <MenuItem component={Link} to="/certifications" onClick={handleMobileMenuClose}>Certificats</MenuItem>
-                <MenuItem component={Link} to="/about" onClick={handleMobileMenuClose}>À propos</MenuItem>
-              </Box>
-              <Divider sx={{ my: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Button 
-                    fullWidth
-                    variant="outlined" 
-                    component={Link} 
-                    to="/login"
-                    onClick={handleMobileMenuClose}
-                    sx={{ borderColor: appTheme.palette.primary.main, color: appTheme.palette.primary.main }}
-                  >
-                    Connexion
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button 
-                    fullWidth
-                    variant="contained" 
-                    component={Link} 
-                    to="/register"
-                    onClick={handleMobileMenuClose}
-                    sx={{ bgcolor: appTheme.palette.primary.main, color: darkMode ? darkMode : '#0a0e17' }}
-                  >
-                    S'inscrire
-                  </Button>
-                </Grid>
-              </Grid>
-            </Paper>
-          )}
-        </AppBar>
-
-        {/* Contenu de Login - préservé du code original */}
-        <Grid container sx={{ minHeight: 'calc(100vh - 64px)' }}>
+        {/* Contenu de Login - uniquement le contenu sans le header */}
+        <Grid container sx={{ minHeight: '100vh' }}>
           {/* Côté gauche avec illustration */}
           <Grid item xs={12} md={6} sx={{ 
-  bgcolor: darkMode ? 'rgba(255,255,255,0.02)' : '#ffffff', 
-  color: appTheme.palette.text.primary,
-  display: { xs: 'none', md: 'flex' },
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  p: 4,
-  position: 'relative'
-}}>
-  <Box sx={{ 
-    display: 'center', 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    width: '100%',
-
-  }}>
-    <img 
-      src="/images/login-illustration__2_-removebg-preview (1).png" 
-      alt="Login Illustration"
-      style={{ 
-        width: '100%', 
-        maxWidth: '550px',
-        height: 'auto', 
-      }}
-      onError={(e) => {
-        e.target.onerror = null;
-        e.target.src = "https://via.placeholder.com/500x500?text=E-Learning+Login";
-      }}
-    />
-  </Box>
+            bgcolor: darkMode ? 'rgba(255,255,255,0.02)' : '#ffffff', 
+            color: appTheme.palette.text.primary,
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            p: 4,
+            position: 'relative'
+          }}>
+            <Box sx={{ 
+              display: 'center', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              width: '100%',
+            }}>
+              <img 
+                src="/images/login-illustration__2_-removebg-preview (1).png" 
+                alt="Login Illustration"
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '550px',
+                  height: 'auto', 
+                }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/500x500?text=E-Learning+Login";
+                }}
+              />
+            </Box>
           </Grid>
           
           {/* Côté droit avec formulaire */}
@@ -395,21 +270,33 @@ const Login = () => {
             display: 'flex',
             flexDirection: 'column',
           }}>
-            {/* Afficher le logo sur mobile */}
+            {/* Logo et toggle de thème */}
             <Box sx={{ 
-              display: { xs: 'flex', md: 'none' }, 
-              justifyContent: 'center',
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
               mb: 4 
             }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+              <Typography variant="h5" component={Link} to="/" sx={{ fontWeight: 'bold', color: 'text.primary', textDecoration: 'none' }}>
                 Skill<span style={{ color: appTheme.palette.primary.main }}>Path</span>
               </Typography>
+              
+              {/* Toggle Theme */}
+              <IconButton onClick={toggleDarkMode} color="inherit" aria-label={darkMode ? "Passer au mode clair" : "Passer au mode sombre"}>
+                {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+              </IconButton>
             </Box>
           
             {error && (
-              <Typography color="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
-              </Typography>
+              </Alert>
+            )}
+            
+            {loginSuccess && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                Connexion réussie ! Redirection en cours...
+              </Alert>
             )}
             
             <Box sx={{ mt: 4, width: '100%' }}>
@@ -423,7 +310,7 @@ const Login = () => {
                   color: 'text.primary'
                 }}
               >
-                Welcome to SkillPath !
+                Bienvenue sur SkillPath !
               </Typography>
               
               {/* Onglets pour choisir le type de connexion */}
@@ -442,10 +329,10 @@ const Login = () => {
                 }}
               >
                 <Tab 
-                  icon={<PersonIcon />} 
-                  label="Utilisateur" 
-                  id="user-tab"
-                  aria-controls="user-panel"
+                  icon={<StudentIcon />} 
+                  label="Étudiant" 
+                  id="student-tab"
+                  aria-controls="student-panel"
                   sx={{
                     '&.Mui-selected': {
                       color: primaryColor,
@@ -453,8 +340,8 @@ const Login = () => {
                   }}
                 />
                 <Tab 
-                  icon={<SchoolIcon />} 
-                  label="Administrateur" 
+                  icon={<SupervisorIcon />} 
+                  label="Personnel" 
                   id="admin-tab"
                   aria-controls="admin-panel"
                   sx={{
@@ -465,24 +352,24 @@ const Login = () => {
                 />
               </Tabs>
               
-              {/* Panneau de connexion utilisateur avec email académique et date de naissance */}
+              {/* Panneau de connexion étudiant */}
               <Box
                 role="tabpanel"
                 hidden={tabValue !== 0}
-                id="user-panel"
-                aria-labelledby="user-tab"
+                id="student-panel"
+                aria-labelledby="student-tab"
               >
                 {tabValue === 0 && (
-                  <Box component="form" onSubmit={handleUserLogin}>
+                  <Box component="form" onSubmit={handleStudentLogin}>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
                       Email académique
                     </Typography>
                     <TextField
                       fullWidth
-                      id="user-email"
-                      name="userEmail"
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
+                      id="student-email"
+                      name="studentEmail"
+                      value={studentEmail}
+                      onChange={(e) => setStudentEmail(e.target.value)}
                       placeholder="Entrez votre email académique"
                       variant="outlined"
                       margin="normal"
@@ -513,7 +400,7 @@ const Login = () => {
                       type="submit"
                       fullWidth
                       variant="contained"
-                      disabled={loading || !userEmail || !birthDate}
+                      disabled={loading || !studentEmail || !birthDate}
                       sx={{ 
                         py: 1.5,
                         mb: 3,
@@ -528,13 +415,13 @@ const Login = () => {
                         }
                       }}
                     >
-                      {loading ? 'Processing...' : 'Log in'}
+                      {loading ? 'Connexion en cours...' : 'Se connecter'}
                     </Button>
                   </Box>
                 )}
               </Box>
               
-              {/* Panneau de connexion administrateur avec email académique et mot de passe */}
+              {/* Panneau de connexion personnel (admin/prof) */}
               <Box
                 role="tabpanel"
                 hidden={tabValue !== 1}
@@ -589,6 +476,42 @@ const Login = () => {
                       sx={{ mb: 3 }}
                     />
                     
+                    {/* Type d'utilisateur - PARTIE MODIFIÉE */}
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                      Type d'utilisateur
+                    </Typography>
+                    <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
+                      <Select
+                        id="admin-role"
+                        value={adminRole}
+                        onChange={(e) => setAdminRole(e.target.value)}
+                        displayEmpty
+                      >
+                        <MenuItem value={ROLES.ADMIN}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <AdminIcon sx={{ mr: 1, color: '#ff9900' }} />
+                            <Box>
+                              <Typography variant="body1">Administrateur système</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Accès en lecture seule, gestion des utilisateurs et certificats
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </MenuItem>
+                        <MenuItem value={ROLES.TEACHER}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <SupervisorIcon sx={{ mr: 1, color: '#4caf50' }} />
+                            <Box>
+                              <Typography variant="body1">Professeur</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Création et gestion du contenu pédagogique (cours, QCM, examens)
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                    
                     <Button
                       type="submit"
                       fullWidth
@@ -608,7 +531,7 @@ const Login = () => {
                         }
                       }}
                     >
-                      {loading ? 'Processing...' : 'Admin Access'}
+                      {loading ? 'Connexion en cours...' : 'Accéder à l\'administration'}
                     </Button>
                   </Box>
                 )}
@@ -616,17 +539,17 @@ const Login = () => {
               
               <Divider sx={{ mb: 3 }} />
               
-              {/* Liens de test pour accéder directement aux pages admin (à enlever en production) */}
+              {/* Liens de test pour accéder directement aux pages (à enlever en production) */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
-                  Pages d'administration (Test uniquement)
+                  Accès rapide aux pages (Test uniquement)
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/student-dashboard')}
+                      onClick={() => goToPage('/student-dashboard')}
                       sx={{ mb: 1 }}
                     >
                       Dashboard Étudiant
@@ -636,7 +559,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/admin-dashboard')}
+                      onClick={() => goToPage('/admin-dashboard')}
                       sx={{ mb: 1 }}
                     >
                       Dashboard Admin
@@ -646,7 +569,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/admin-courses')}
+                      onClick={() => goToPage('/admin-courses')}
                       sx={{ mb: 1 }}
                     >
                       Gestion Cours
@@ -656,7 +579,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/admin-qcm')}
+                      onClick={() => goToPage('/admin-qcm')}
                       sx={{ mb: 1 }}
                     >
                       Gestion QCM
@@ -666,7 +589,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/admin-exams')}
+                      onClick={() => goToPage('/admin-exams')}
                       sx={{ mb: 1 }}
                     >
                       Gestion Examens
@@ -676,7 +599,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/admin/certificats')}
+                      onClick={() => goToPage('/admin/certificats')}
                       sx={{ mb: 1 }}
                     >
                       Certificats
@@ -686,7 +609,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/progress')}
+                      onClick={() => goToPage('/progress')}
                       sx={{ mb: 1 }}
                     >
                       Progression
@@ -696,7 +619,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/certificate')}
+                      onClick={() => goToPage('/certificate')}
                       sx={{ mb: 1 }}
                     >
                       Mes Certificats
@@ -706,7 +629,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/ExamPage')}
+                      onClick={() => goToPage('/ExamPage')}
                       sx={{ mb: 1 }}
                     >
                       Commencer l'Examen
@@ -716,7 +639,7 @@ const Login = () => {
                     <Button 
                       variant="outlined"
                       fullWidth
-                      onClick={() => goToAdminPage('/ExamWithProctoring')}
+                      onClick={() => goToPage('/ExamWithProctoring')}
                       sx={{ mb: 1, bgcolor: '#ff5722', color: 'white', '&:hover': { bgcolor: '#e64a19' } }}
                     >
                       Examen avec Surveillance
@@ -727,9 +650,9 @@ const Login = () => {
               
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                  Don't have an account?{' '}
+                  Vous n'avez pas encore de compte ?{' '}
                   <Link to="/register" style={{ color: primaryColor, fontWeight: 'bold', textDecoration: 'none' }}>
-                    Sign up
+                    S'inscrire
                   </Link>
                 </Typography>
               </Box>

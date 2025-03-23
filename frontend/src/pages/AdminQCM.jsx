@@ -104,7 +104,105 @@ const AdminQCM = () => {
   const handleEditQCM = () => {
     setEditMode(true);
   };
+  const handleAddOption = () => {
+    if (!currentQuestion || !editMode) return;
+    
+    // Trouver l'ID maximum actuel et ajouter 1 pour le nouvel ID
+    const maxId = Math.max(...currentQuestion.options.map(option => option.id), 0);
+    const newOption = {
+      id: maxId + 1,
+      text: '',
+      isCorrect: false
+    };
+    
+    // Créer une nouvelle question avec l'option ajoutée
+    const updatedQuestion = {
+      ...currentQuestion,
+      options: [...currentQuestion.options, newOption]
+    };
+    
+    // Mettre à jour la question actuelle
+    setCurrentQuestion(updatedQuestion);
+    
+    // Mettre à jour la question dans le QCM sélectionné
+    if (selectedQCM) {
+      const updatedQuestions = selectedQCM.questions.map(q => 
+        q.id === currentQuestion.id ? updatedQuestion : q
+      );
+      
+      setSelectedQCM({
+        ...selectedQCM,
+        questions: updatedQuestions
+      });
+    }
+  };
   
+  
+  // 2. Fonction pour ajouter une nouvelle question
+  const handleAddQuestion = () => {
+    if (!selectedQCM || !editMode) return;
+    
+    // Trouver l'ID maximum actuel des questions et ajouter 1
+    const maxId = Math.max(...selectedQCM.questions.map(q => q.id), 0);
+     
+  // Créer une nouvelle option
+  const newOption = {
+    id: maxId + 1,
+    text: '',
+    isCorrect: false
+  };
+
+  console.log("Nouvelle option:", newOption);
+
+  // Mettre à jour la question avec la nouvelle option
+  const updatedQuestion = {
+    ...currentQuestion,
+    options: [...currentQuestion.options, newOption]
+  };
+    // Mise à jour de l'état de la question actuelle
+    setCurrentQuestion(updatedQuestion);
+    
+    // Créer une nouvelle question vide
+    const newQuestion = {
+      id: maxId + 1,
+      text: 'Nouvelle question',
+      type: 'single',
+      options: [
+        { id: 1, text: 'Option 1', isCorrect: true },
+        { id: 2, text: 'Option 2', isCorrect: false }
+      ]
+    };
+    
+    // Ajouter la question au QCM sélectionné
+    const updatedQCM = {
+      ...selectedQCM,
+      questions: [...selectedQCM.questions, newQuestion]
+    };
+    
+  
+    // Sélectionner la nouvelle question pour l'édition
+    setCurrentQuestion(newQuestion);
+    // Mise à jour du QCM sélectionné
+  if (selectedQCM) {
+    const updatedQuestions = selectedQCM.questions.map(q => 
+      q.id === currentQuestion.id ? updatedQuestion : q
+    );
+    
+    setSelectedQCM({
+      ...selectedQCM,
+      questions: updatedQuestions
+    });
+    
+    // Mise à jour de la liste des QCMs
+    setQCMs(qcms.map(q => 
+      q.id === selectedQCM.id ? { ...selectedQCM, questions: updatedQuestions } : q
+    ));
+  }
+
+    
+  };
+
+
   const handleSaveQCM = () => {
     if (selectedQCM) {
       setQCMs(qcms.map(q => q.id === selectedQCM.id ? selectedQCM : q));
@@ -115,6 +213,7 @@ const AdminQCM = () => {
   const handleSelectQuestion = (question) => {
     setCurrentQuestion(question);
   };
+  
   
   return (
     <Box sx={{ py: 4, bgcolor: '#f5f7fb', minHeight: '100vh' }}>
@@ -233,7 +332,6 @@ const AdminQCM = () => {
                     
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={4}>
-                      // Continuation de AdminQCM.jsx
                         <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
                           Questions
                         </Typography>
@@ -256,15 +354,16 @@ const AdminQCM = () => {
                             ))}
                           </List>
                           {editMode && (
-                            <Button 
-                              fullWidth 
-                              variant="outlined" 
-                              startIcon={<AddIcon />}
-                              sx={{ mt: 2 }}
-                            >
-                              Ajouter une question
-                            </Button>
-                          )}
+                          <Button 
+                             fullWidth 
+                               variant="outlined" 
+                                 startIcon={<AddIcon />}
+                                   sx={{ mt: 2 }}
+                                    onClick={handleAddQuestion}
+                                      >
+                                       Ajouter une question
+                              </Button>
+                            )}
                         </Paper>
                       </Grid>
                       
@@ -370,12 +469,19 @@ const AdminQCM = () => {
                                       </IconButton>
                                     </Box>
                                   ))}
+
                                   <Button 
-                                    variant="outlined" 
-                                    startIcon={<AddIcon />}
-                                    sx={{ mt: 1 }}
-                                  >
-                                    Ajouter une option
+                                     variant="outlined" 
+                                     startIcon={<AddIcon />}
+                                     sx={{ mt: 1 }}
+                                     onClick={() => {
+                                      console.log("Bouton Ajouter une option cliqué");
+                                     console.log("currentQuestion:", currentQuestion);
+                                     console.log("editMode:", editMode);
+                                     handleAddOption();
+                                    }}
+                                    >
+                                   Ajouter une option
                                   </Button>
                                 </Box>
                               ) : (

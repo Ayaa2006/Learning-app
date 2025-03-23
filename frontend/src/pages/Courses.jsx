@@ -1,4 +1,4 @@
-// src/pages/Modules.jsx
+// src/pages/Courses.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -57,8 +57,13 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
+import ArticleIcon from '@mui/icons-material/Article';
+import QuizIcon from '@mui/icons-material/Quiz';
 
-// Catégories de modules avec des icônes simplifiées
+// Catégories pour les cours
 const categories = [
   { id: 'all', name: 'Toutes les catégories', icon: <BookIcon /> },
   { id: 'programming', name: 'Programmation', icon: <BookIcon /> },
@@ -84,287 +89,311 @@ const sortOptions = [
   { id: 'popular', name: 'Les plus populaires' },
   { id: 'newest', name: 'Les plus récents' },
   { id: 'rating', name: 'Mieux notés' },
-  { id: 'az', name: 'A-Z' },
-  { id: 'za', name: 'Z-A' }
+  { id: 'duration-asc', name: 'Durée (croissante)' },
+  { id: 'duration-desc', name: 'Durée (décroissante)' }
 ];
 
-// Données fictives pour les modules
-const mockModules = [
+// Types de cours
+const courseTypes = [
+  { id: 'all', name: 'Tous les types' },
+  { id: 'video', name: 'Vidéo', icon: <OndemandVideoIcon /> },
+  { id: 'article', name: 'Article', icon: <ArticleIcon /> },
+  { id: 'quiz', name: 'Quiz', icon: <QuizIcon /> }
+];
+
+// Données fictives pour les cours
+const mockCourses = [
   {
     id: 1,
-    title: 'Intelligence Artificielle: Fondamentaux',
-    description: 'Découvrez les concepts clés de l\'IA, des algorithmes fondamentaux aux applications modernes.',
-    image: '/images/bck7.png',
-    duration: '12 heures',
-    lessons: 24,
-    level: 'Intermédiaire',
-    rating: 4.8,
-    reviews: 428,
-    students: 4500,
-    category: 'data-science',
-    instructor: 'Dr. Sophie Durand',
-    featured: true,
-    tags: ['Machine Learning', 'Deep Learning', 'Neural Networks'],
-    lastUpdated: '2025-01-15'
+    title: 'Introduction au HTML et CSS',
+    description: 'Apprenez les bases du développement web avec HTML et CSS pour créer vos premières pages web.',
+    image: '/images/bck11.png',
+    duration: '3 heures',
+    type: 'video',
+    level: 'Débutant',
+    rating: 4.7,
+    reviews: 328,
+    students: 12500,
+    category: 'programming',
+    instructor: 'Sophie Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-10',
+    tags: ['HTML', 'CSS', 'Web Development']
   },
   {
     id: 2,
-    title: 'Développement Web Full-Stack',
-    description: 'Maîtrisez les technologies front-end et back-end pour créer des applications web complètes.',
-    image: '/images/bck11.png',
-    duration: '24 heures',
-    lessons: 42,
-    level: 'Avancé',
-    rating: 4.7,
-    reviews: 612,
-    students: 6200,
+    title: 'JavaScript: Les fondamentaux',
+    description: 'Maîtrisez les bases du langage JavaScript pour créer des sites web interactifs et dynamiques.',
+    image: '/images/bck2.png',
+    duration: '4 heures',
+    type: 'video',
+    level: 'Débutant',
+    rating: 4.9,
+    reviews: 412,
+    students: 10800,
     category: 'programming',
     instructor: 'Thomas Martin',
-    featured: true,
-    tags: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
-    lastUpdated: '2025-02-10'
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-08',
+    tags: ['JavaScript', 'Web Development', 'Programming']
   },
   {
     id: 3,
-    title: 'Data Science & Visualisation',
-    description: 'Apprenez à analyser et visualiser des données complexes pour en extraire des insights pertinents.',
-    image: '/images/bck2.png',
-    duration: '16 heures',
-    lessons: 28,
+    title: 'Exploration des données avec Pandas',
+    description: 'Apprenez à manipuler et analyser des données en Python avec la bibliothèque Pandas.',
+    image: '/images/bck9.png',
+    duration: '2.5 heures',
+    type: 'video',
     level: 'Intermédiaire',
-    rating: 4.9,
-    reviews: 523,
-    students: 5800,
+    rating: 4.8,
+    reviews: 253,
+    students: 7400,
     category: 'data-science',
     instructor: 'Emma Dubois',
-    featured: true,
-    tags: ['Python', 'Pandas', 'Matplotlib', 'D3.js'],
-    lastUpdated: '2025-01-28'
+    moduleId: 3,
+    moduleName: 'Data Science & Visualisation',
+    lastUpdated: '2025-01-25',
+    tags: ['Python', 'Pandas', 'Data Analysis']
   },
   {
     id: 4,
-    title: 'Fondamentaux de la Programmation Python',
-    description: 'Une introduction complète à Python, l\'un des langages de programmation les plus polyvalents et populaires.',
-    image: '/images/bck9.png',
-    duration: '10 heures',
-    lessons: 18,
-    level: 'Débutant',
+    title: 'Les bases de React.js',
+    description: 'Découvrez comment créer des interfaces utilisateur modernes avec la bibliothèque React.js.',
+    image: '/images/bck7.png',
+    duration: '3.5 heures',
+    type: 'video',
+    level: 'Intermédiaire',
     rating: 4.6,
-    reviews: 789,
-    students: 12500,
+    reviews: 342,
+    students: 9200,
     category: 'programming',
-    instructor: 'Lucas Bernard',
-    featured: false,
-    tags: ['Python', 'Algorithmique', 'Structures de données'],
-    lastUpdated: '2025-02-05'
+    instructor: 'Thomas Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-12',
+    tags: ['React', 'JavaScript', 'Frontend']
   },
   {
     id: 5,
-    title: 'Marketing Digital Stratégique',
-    description: 'Développez une stratégie marketing digitale efficace pour augmenter votre visibilité en ligne et générer des leads.',
-    image: '/images/bck8.png',
-    duration: '14 heures',
-    lessons: 22,
+    title: 'Node.js et APIs RESTful',
+    description: 'Créez des API RESTful robustes avec Node.js et Express pour vos applications web.',
+    image: '/images/bck4.png',
+    duration: '3 heures',
+    type: 'video',
     level: 'Intermédiaire',
-    rating: 4.5,
-    reviews: 356,
-    students: 4200,
-    category: 'business',
-    instructor: 'Julie Moreau',
-    featured: false,
-    tags: ['SEO', 'Content Marketing', 'Analytics', 'Social Media'],
-    lastUpdated: '2025-01-20'
+    rating: 4.7,
+    reviews: 286,
+    students: 6800,
+    category: 'programming',
+    instructor: 'Thomas Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-15',
+    tags: ['Node.js', 'Express', 'REST API', 'Backend']
   },
   {
     id: 6,
-    title: 'Design UX/UI Moderne',
-    description: 'Maîtrisez les principes et outils du design d\'interface utilisateur et d\'expérience utilisateur.',
-    image: '/images/bck10.png',
-    duration: '18 heures',
-    lessons: 32,
-    level: 'Intermédiaire',
-    rating: 4.7,
-    reviews: 412,
-    students: 3800,
-    category: 'design',
-    instructor: 'Clara Lefèvre',
-    featured: false,
-    tags: ['Figma', 'Design Thinking', 'Wireframing', 'Prototyping'],
-    lastUpdated: '2025-02-15'
+    title: 'Introduction à l\'Intelligence Artificielle',
+    description: 'Comprendre les concepts fondamentaux de l\'IA et ses applications dans le monde moderne.',
+    image: '/images/bck6.png',
+    duration: '2 heures',
+    type: 'article',
+    level: 'Débutant',
+    rating: 4.9,
+    reviews: 178,
+    students: 8200,
+    category: 'data-science',
+    instructor: 'Dr. Sophie Durand',
+    moduleId: 1,
+    moduleName: 'Intelligence Artificielle: Fondamentaux',
+    lastUpdated: '2025-01-10',
+    tags: ['AI', 'Machine Learning', 'Artificial Intelligence']
   },
   {
     id: 7,
-    title: 'Machine Learning Avancé',
-    description: 'Exploration approfondie des algorithmes de machine learning et de leur mise en œuvre pratique.',
-    image: '/images/bck22.png',
-    duration: '20 heures',
-    lessons: 36,
+    title: 'Réseaux de Neurones avec TensorFlow',
+    description: 'Apprenez à créer et entraîner des réseaux de neurones avec la bibliothèque TensorFlow.',
+    image: '/images/bck10.png',
+    duration: '4 heures',
+    type: 'video',
     level: 'Avancé',
-    rating: 4.9,
-    reviews: 287,
-    students: 2900,
+    rating: 4.8,
+    reviews: 214,
+    students: 5600,
     category: 'data-science',
-    instructor: 'Dr. Antoine Mercier',
-    featured: false,
-    tags: ['Scikit-learn', 'TensorFlow', 'Model Optimization', 'Feature Engineering'],
-    lastUpdated: '2025-01-08'
+    instructor: 'Dr. Sophie Durand',
+    moduleId: 1,
+    moduleName: 'Intelligence Artificielle: Fondamentaux',
+    lastUpdated: '2025-01-18',
+    tags: ['Deep Learning', 'TensorFlow', 'Neural Networks']
   },
   {
     id: 8,
-    title: 'Leadership et Management d\'Équipe',
-    description: 'Développez vos compétences en leadership pour gérer efficacement des équipes et stimuler l\'innovation.',
-    image: '/images/bck6.png',
-    duration: '12 heures',
-    lessons: 20,
+    title: 'Visualisation de données avec Matplotlib et Seaborn',
+    description: 'Créez des visualisations de données attrayantes et informatives en Python.',
+    image: '/images/bck8.png',
+    duration: '2.5 heures',
+    type: 'video',
     level: 'Intermédiaire',
-    rating: 4.6,
-    reviews: 324,
-    students: 4800,
-    category: 'business',
-    instructor: 'Philippe Laurent',
-    featured: false,
-    tags: ['Gestion d\'équipe', 'Communication', 'Résolution de conflits'],
-    lastUpdated: '2025-02-18'
+    rating: 4.7,
+    reviews: 196,
+    students: 6300,
+    category: 'data-science',
+    instructor: 'Emma Dubois',
+    moduleId: 3,
+    moduleName: 'Data Science & Visualisation',
+    lastUpdated: '2025-01-30',
+    tags: ['Data Visualization', 'Python', 'Matplotlib', 'Seaborn']
   },
   {
     id: 9,
-    title: 'Sécurité Informatique: Ethical Hacking',
-    description: 'Apprenez à identifier et exploiter les vulnérabilités de sécurité pour mieux protéger les systèmes informatiques.',
-    image: '/images/bck17.png',
-    duration: '16 heures',
-    lessons: 26,
-    level: 'Avancé',
-    rating: 4.8,
-    reviews: 312,
-    students: 3200,
+    title: 'MongoDB pour développeurs',
+    description: 'Maîtrisez la base de données NoSQL MongoDB pour vos applications modernes.',
+    image: '/images/bck15.png',
+    duration: '3 heures',
+    type: 'video',
+    level: 'Intermédiaire',
+    rating: 4.6,
+    reviews: 234,
+    students: 5800,
     category: 'programming',
-    instructor: 'Mathieu Girard',
-    featured: false,
-    tags: ['Cybersécurité', 'Penetration Testing', 'Network Security'],
-    lastUpdated: '2025-01-25'
+    instructor: 'Thomas Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-08',
+    tags: ['MongoDB', 'NoSQL', 'Database']
   },
   {
     id: 10,
-    title: 'Développement d\'Applications Mobiles avec React Native',
-    description: 'Créez des applications mobiles natives pour iOS et Android avec un seul code base en utilisant React Native.',
-    image: '/images/bck15.png',
-    duration: '18 heures',
-    lessons: 30,
-    level: 'Intermédiaire',
+    title: 'Déploiement d\'Applications Full-Stack',
+    description: 'Apprenez à déployer vos applications web sur des services cloud comme AWS, Heroku et Vercel.',
+    image: '/images/bck16.png',
+    duration: '2 heures',
+    type: 'video',
+    level: 'Avancé',
     rating: 4.7,
-    reviews: 285,
-    students: 3600,
+    reviews: 168,
+    students: 4200,
     category: 'programming',
-    instructor: 'Amélie Petit',
-    featured: false,
-    tags: ['React Native', 'JavaScript', 'Mobile Development'],
-    lastUpdated: '2025-02-12'
+    instructor: 'Thomas Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-18',
+    tags: ['Deployment', 'DevOps', 'Cloud']
   },
   {
     id: 11,
-    title: 'Introduction à l\'Astrophysique',
-    description: 'Explorez les fondements de l\'astrophysique, des lois fondamentales aux dernières découvertes sur notre univers.',
-    image:'/images/bck21.png',
-    duration: '14 heures',
-    lessons: 24,
+    title: 'Initiation à Python',
+    description: 'Découvrez les bases du langage Python et sa syntaxe pour débuter en programmation.',
+    image: '/images/bck9.png',
+    duration: '2 heures',
+    type: 'video',
     level: 'Débutant',
     rating: 4.9,
-    reviews: 198,
-    students: 2200,
-    category: 'science',
-    instructor: 'Dr. Jean Leclerc',
-    featured: false,
-    tags: ['Astronomie', 'Physique', 'Cosmologie'],
-    lastUpdated: '2025-01-30'
+    reviews: 426,
+    students: 15600,
+    category: 'programming',
+    instructor: 'Lucas Bernard',
+    moduleId: 4,
+    moduleName: 'Fondamentaux de la Programmation Python',
+    lastUpdated: '2025-02-05',
+    tags: ['Python', 'Programming', 'Beginner']
   },
   {
     id: 12,
-    title: 'Statistiques et Probabilités Appliquées',
-    description: 'Maîtrisez les concepts fondamentaux de statistiques et de probabilités avec des applications pratiques.',
+    title: 'Structures de données en Python',
+    description: 'Maîtrisez les listes, dictionnaires, tuples et autres structures de données en Python.',
     image: '/images/bck20.png',
-    duration: '15 heures',
-    lessons: 28,
+    duration: '2.5 heures',
+    type: 'video',
     level: 'Intermédiaire',
-    rating: 4.6,
-    reviews: 246,
-    students: 3100,
-    category: 'math',
-    instructor: 'Dr. Sarah Cohen',
-    featured: false,
-    tags: ['Statistiques', 'Probabilités', 'Data Analysis'],
-    lastUpdated: '2025-02-08'
+    rating: 4.7,
+    reviews: 312,
+    students: 8400,
+    category: 'programming',
+    instructor: 'Lucas Bernard',
+    moduleId: 4,
+    moduleName: 'Fondamentaux de la Programmation Python',
+    lastUpdated: '2025-02-10',
+    tags: ['Python', 'Data Structures', 'Programming']
   },
   {
     id: 13,
-    title: 'Intelligence Émotionnelle au Travail',
-    description: 'Développez votre intelligence émotionnelle pour améliorer vos relations professionnelles et votre efficacité.',
-    image: '/images/bck4.png',
-    duration: '8 heures',
-    lessons: 16,
+    title: 'Quiz: Les bases de l\'HTML et CSS',
+    description: 'Testez vos connaissances sur les fondamentaux du HTML et CSS.',
+    image: '/images/bck21.png',
+    duration: '30 minutes',
+    type: 'quiz',
     level: 'Débutant',
-    rating: 4.8,
-    reviews: 320,
-    students: 5600,
-    category: 'personal-dev',
-    instructor: 'Sophie Renaud',
-    featured: false,
-    tags: ['Soft Skills', 'Communication', 'Gestion du stress'],
-    lastUpdated: '2025-01-22'
+    rating: 4.5,
+    reviews: 186,
+    students: 7800,
+    category: 'programming',
+    instructor: 'Sophie Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-12',
+    tags: ['HTML', 'CSS', 'Quiz']
   },
   {
     id: 14,
-    title: 'Animation et Motion Design',
-    description: 'Apprenez à créer des animations captivantes et du motion design pour vos projets digitaux.',
-    image: '/images/bck19.png',
-    duration: '16 heures',
-    lessons: 28,
-    level: 'Intermédiaire',
-    rating: 4.7,
-    reviews: 189,
-    students: 2800,
-    category: 'design',
-    instructor: 'Nicolas Duval',
-    featured: false,
-    tags: ['After Effects', 'Motion Graphics', 'Animation Principles'],
-    lastUpdated: '2025-02-14'
+    title: 'Quiz: JavaScript fondamental',
+    description: 'Évaluez votre compréhension des concepts de base de JavaScript.',
+    image: '/images/bck22.png',
+    duration: '40 minutes',
+    type: 'quiz',
+    level: 'Débutant',
+    rating: 4.6,
+    reviews: 213,
+    students: 6700,
+    category: 'programming',
+    instructor: 'Thomas Martin',
+    moduleId: 2,
+    moduleName: 'Développement Web Full-Stack',
+    lastUpdated: '2025-02-14',
+    tags: ['JavaScript', 'Quiz', 'Programming']
   },
   {
     id: 15,
-    title: 'Cloud Computing avec AWS',
-    description: 'Maîtrisez les services cloud d\'Amazon Web Services pour déployer et gérer des applications à grande échelle.',
-    image: '/images/bck16.png',
-    duration: '20 heures',
-    lessons: 34,
-    level: 'Avancé',
+    title: 'Tendances actuelles en Intelligence Artificielle',
+    description: 'Un aperçu des dernières avancées et tendances dans le domaine de l\'IA.',
+    image: '/images/bck7.png',
+    duration: '1 heure',
+    type: 'article',
+    level: 'Intermédiaire',
     rating: 4.8,
-    reviews: 276,
-    students: 3400,
-    category: 'programming',
-    instructor: 'David Moreau',
-    featured: false,
-    tags: ['AWS', 'Cloud Architecture', 'DevOps'],
-    lastUpdated: '2025-01-18'
+    reviews: 142,
+    students: 5300,
+    category: 'data-science',
+    instructor: 'Dr. Sophie Durand',
+    moduleId: 1,
+    moduleName: 'Intelligence Artificielle: Fondamentaux',
+    lastUpdated: '2025-01-20',
+    tags: ['AI', 'Machine Learning', 'Trends']
   },
   {
     id: 16,
-    title: 'Introduction à la Blockchain',
-    description: 'Découvrez les principes fondamentaux de la technologie blockchain et ses applications au-delà des cryptomonnaies.',
-    image:'/images/bck18.png',
-    duration: '12 heures',
-    lessons: 22,
-    level: 'Débutant',
-    rating: 4.6,
-    reviews: 210,
-    students: 2900,
-    category: 'programming',
-    instructor: 'Marc Rousseau',
-    featured: false,
-    tags: ['Blockchain', 'Cryptography', 'Smart Contracts'],
-    lastUpdated: '2025-02-20'
+    title: 'Visualisations interactives avec D3.js',
+    description: 'Créez des visualisations de données interactives et dynamiques pour le web avec D3.js.',
+    image: '/images/bck17.png',
+    duration: '3 heures',
+    type: 'video',
+    level: 'Avancé',
+    rating: 4.7,
+    reviews: 156,
+    students: 3800,
+    category: 'data-science',
+    instructor: 'Emma Dubois',
+    moduleId: 3,
+    moduleName: 'Data Science & Visualisation',
+    lastUpdated: '2025-02-02',
+    tags: ['D3.js', 'Data Visualization', 'JavaScript']
   }
 ];
 
-const Modules = () => {
+const Courses = () => {
   // État pour le mode sombre/clair
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
@@ -375,10 +404,11 @@ const Modules = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
-  const [modules, setModules] = useState([]);
-  const [filteredModules, setFilteredModules] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // État pour le menu mobile
@@ -387,8 +417,8 @@ const Modules = () => {
   // Détecter les appareils mobiles
   const isMobile = useMediaQuery('(max-width:900px)');
   
-  // Nombre de modules par page
-  const modulesPerPage = 8;
+  // Nombre de cours par page
+  const coursesPerPage = 9;
   
   // Définition du thème en fonction du mode
   const theme = createTheme({
@@ -457,38 +487,43 @@ const Modules = () => {
     
     // Simuler une requête API avec un délai
     const timer = setTimeout(() => {
-      setModules(mockModules);
+      setCourses(mockCourses);
       setLoading(false);
     }, 800);
     
     return () => clearTimeout(timer);
   }, []);
   
-  // Filtrer les modules en fonction des critères
+  // Filtrer les cours en fonction des critères
   useEffect(() => {
-    let filtered = [...modules];
+    let filtered = [...courses];
     
     // Filtrer par recherche
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(module => 
-        module.title.toLowerCase().includes(query) || 
-        module.description.toLowerCase().includes(query) ||
-        module.tags.some(tag => tag.toLowerCase().includes(query))
+      filtered = filtered.filter(course => 
+        course.title.toLowerCase().includes(query) || 
+        course.description.toLowerCase().includes(query) ||
+        course.tags.some(tag => tag.toLowerCase().includes(query))
       );
     }
     
     // Filtrer par catégorie
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(module => module.category === selectedCategory);
+      filtered = filtered.filter(course => course.category === selectedCategory);
     }
     
     // Filtrer par niveau
     if (selectedLevel !== 'all') {
-      filtered = filtered.filter(module => module.level.toLowerCase() === selectedLevel);
+      filtered = filtered.filter(course => course.level.toLowerCase() === selectedLevel);
+    }
+
+    // Filtrer par type
+    if (selectedType !== 'all') {
+      filtered = filtered.filter(course => course.type === selectedType);
     }
     
-    // Trier les modules
+    // Trier les cours
     switch (sortBy) {
       case 'popular':
         filtered.sort((a, b) => b.students - a.students);
@@ -499,19 +534,37 @@ const Modules = () => {
       case 'rating':
         filtered.sort((a, b) => b.rating - a.rating);
         break;
-      case 'az':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      case 'duration-asc':
+        filtered.sort((a, b) => {
+          const getMinutes = (durationStr) => {
+            const match = durationStr.match(/(\d+(\.\d+)?)\s*(heures?|minutes?)/);
+            if (!match) return 0;
+            const value = parseFloat(match[1]);
+            const unit = match[3];
+            return unit.startsWith('heure') ? value * 60 : value;
+          };
+          return getMinutes(a.duration) - getMinutes(b.duration);
+        });
         break;
-      case 'za':
-        filtered.sort((a, b) => b.title.localeCompare(a.title));
+      case 'duration-desc':
+        filtered.sort((a, b) => {
+          const getMinutes = (durationStr) => {
+            const match = durationStr.match(/(\d+(\.\d+)?)\s*(heures?|minutes?)/);
+            if (!match) return 0;
+            const value = parseFloat(match[1]);
+            const unit = match[3];
+            return unit.startsWith('heure') ? value * 60 : value;
+          };
+          return getMinutes(b.duration) - getMinutes(a.duration);
+        });
         break;
       default:
         break;
     }
     
-    setFilteredModules(filtered);
+    setFilteredCourses(filtered);
     setCurrentPage(1); // Réinitialiser à la première page après filtrage
-  }, [searchQuery, selectedCategory, selectedLevel, sortBy, modules]);
+  }, [searchQuery, selectedCategory, selectedLevel, selectedType, sortBy, courses]);
   
   // Sauvegarder le mode dans localStorage à chaque changement
   useEffect(() => {
@@ -535,13 +588,27 @@ const Modules = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  // Calculer les modules à afficher sur la page actuelle
-  const indexOfLastModule = currentPage * modulesPerPage;
-  const indexOfFirstModule = indexOfLastModule - modulesPerPage;
-  const currentModules = filteredModules.slice(indexOfFirstModule, indexOfLastModule);
+  // Calculer les cours à afficher sur la page actuelle
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
   
   // Calculer le nombre total de pages
-  const totalPages = Math.ceil(filteredModules.length / modulesPerPage);
+  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+
+  // Obtenir l'icône pour le type de cours
+  const getCourseTypeIcon = (type) => {
+    switch (type) {
+      case 'video':
+        return <OndemandVideoIcon sx={{ fontSize: '1rem', mr: 0.5 }} />;
+      case 'article':
+        return <ArticleIcon sx={{ fontSize: '1rem', mr: 0.5 }} />;
+      case 'quiz':
+        return <QuizIcon sx={{ fontSize: '1rem', mr: 0.5 }} />;
+      default:
+        return <BookIcon sx={{ fontSize: '1rem', mr: 0.5 }} />;
+    }
+  };
   
   return (
     <ThemeProvider theme={theme}>
@@ -559,11 +626,11 @@ const Modules = () => {
               {/* Menu Desktop */}
               {!isMobile && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Button component={Link} to="/modules" color="inherit" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>Modules</Button>
-                  <Button component={Link} to="/courses" color="inherit">Cours</Button>
+                  <Button component={Link} to="/modules" color="inherit">Modules</Button>
+                  <Button component={Link} to="/courses" color="inherit" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>Cours</Button>
                   <Button component={Link} to="/certifications" color="inherit">Certifications</Button>
                   <Button component={Link} to="/about" color="inherit">À propos</Button>
-                  <Button component={Link} to="/Home" color="inherit">Home</Button>
+                  <Button component={Link} to="/pricing" color="inherit">Tarifs</Button>
                 </Box>
               )}
               
@@ -593,6 +660,14 @@ const Modules = () => {
                       to="/login"
                     >
                       Connexion
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{ bgcolor: theme.palette.primary.main, color: darkMode ? darkMode : '#0a0e17' }}
+                      component={Link}
+                      to="/register"
+                    >
+                      S'inscrire
                     </Button>
                   </>
                 )}
@@ -660,75 +735,189 @@ const Modules = () => {
         <Box 
           component="section"
           sx={{ 
-            py: { xs: 5, md: 8 },
-            backgroundImage: 'url("/images/big_pic.png")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            position: 'relative',
-            color: '#fff',
-            '&::before': {
-              content: '""',
+            position: 'relative', 
+            overflow: 'hidden',
+            py: { xs: 6, md: 10 },
+            color: '#fff'
+          }}
+        >
+          {/* Image d'arrière-plan */}
+          <Box 
+            sx={{
               position: 'absolute',
               top: 0,
               left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(10, 14, 23, 0.75)',
+              right: 0,
+              bottom: 0,
+              backgroundImage: 'url("/images/courses-header-bg.jpg")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(4px)', // Ajout du flou
+              transform: 'scale(1.05)', // Légèrement agrandi pour éviter les bords blancs dus au flou
               zIndex: 0
-            }
-          }}
-        >
-          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography 
-              variant="h2" 
-              component="h1" 
-              sx={{ 
-                fontWeight: 800,
-                mb: 2,
-                textAlign: { xs: 'center', md: 'left' }
-              }}
-            >
-              Catalogue de Modules
-            </Typography>
-            
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                mb: { xs: 4, md: 6 },
-                color: 'rgba(255,255,255,0.9)',
-                maxWidth: '800px',
-                textAlign: { xs: 'center', md: 'left' }
-              }}
-            >
-              Découvrez notre collection complète de modules d'apprentissage de qualité professionnelle, conçus par des experts et validés par l'industrie.
-            </Typography>
-            
-            {/* Breadcrumbs */}
-            <Breadcrumbs 
-              separator={<NavigateNextIcon fontSize="small" />} 
-              aria-label="breadcrumb"
-              sx={{ 
-                mb: 4,
-                '& .MuiBreadcrumbs-separator': {
-                  color: 'rgba(255,255,255,0.5)',
-                },
-                '& a': {
-                  color: 'rgba(255,255,255,0.7)',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    color: '#fff',
-                    textDecoration: 'underline',
-                  }
-                }
-              }}
-            >
-              <Link to="/">Accueil</Link>
-              <Typography color="white">Modules</Typography>
-            </Breadcrumbs>
+            }}
+          />
+          
+          {/* Overlay sombre pour améliorer la lisibilité */}
+          <Box 
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(10, 14, 23, 0.65)', // Overlay sombre semi-transparent
+              zIndex: 1
+            }}
+          />
+
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+            <Grid container spacing={4} alignItems="center">
+              <Grid item xs={12} md={7}>
+                <Box>
+                  <Typography 
+                    variant="h2" 
+                    component="h1" 
+                    sx={{ 
+                      fontWeight: 800,
+                      fontSize: { xs: '2.5rem', md: '3.5rem' },
+                      mb: 2,
+                      background: 'linear-gradient(90deg, #ff9900, #ff5500)',
+                      backgroundClip: 'text',
+                      textFillColor: 'transparent',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      display: 'inline-block'
+                    }}
+                  >
+                    Catalogue de Cours
+                  </Typography>
+                  
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      mb: 4,
+                      color: 'rgba(255,255,255,0.9)',
+                      fontWeight: 400,
+                      lineHeight: 1.5
+                    }}
+                  >
+                    Des cours de qualité sur une variété de sujets pour vous aider à développer de nouvelles compétences et atteindre vos objectifs professionnels.
+                  </Typography>
+                  
+                  {/* Breadcrumbs */}
+                  <Breadcrumbs 
+                    separator={<NavigateNextIcon fontSize="small" />} 
+                    aria-label="breadcrumb"
+                    sx={{ 
+                      mb: 4,
+                      '& .MuiBreadcrumbs-separator': {
+                        color: 'rgba(255,255,255,0.5)',
+                      },
+                      '& a': {
+                        color: 'rgba(255,255,255,0.7)',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          color: '#fff',
+                          textDecoration: 'underline',
+                        }
+                      }
+                    }}
+                  >
+                    <Link to="/">Accueil</Link>
+                    <Typography color="white">Cours</Typography>
+                  </Breadcrumbs>
+                  
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 4 }}>
+                    <Button 
+                      variant="contained" 
+                      size="large"
+                      startIcon={<PlayArrowIcon />}
+                      sx={{ 
+                        bgcolor: theme.palette.primary.main, 
+                        color: darkMode ? darkMode : '#0a0e17',
+                        px: 3,
+                        py: 1.5,
+                        fontSize: '1rem',
+                        fontWeight: 'bold'
+                      }}
+                      component={Link}
+                      to="/register"
+                    >
+                      Commencer gratuitement
+                    </Button>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
+                {/* Statistics Card */}
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3, 
+                    borderRadius: '16px', 
+                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Nos cours en chiffres
+                  </Typography>
+                  
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h3" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+                          450+
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          Cours disponibles
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h3" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+                          80+
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          Instructeurs
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h3" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+                          4.8
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          Note moyenne
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Box sx={{ textAlign: 'center', p: 2 }}>
+                        <Typography variant="h3" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+                          24h
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          Support réactif
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+            </Grid>
           </Container>
         </Box>
         
-        {/* Modules Content */}
+        {/* Courses Content */}
         <Box component="section" sx={{ py: 4, flexGrow: 1 }}>
           <Container maxWidth="lg">
             {/* Filters Section */}
@@ -738,7 +927,7 @@ const Modules = () => {
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    placeholder="Rechercher un module..."
+                    placeholder="Rechercher un cours..."
                     variant="outlined"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -760,7 +949,7 @@ const Modules = () => {
                 </Grid>
                 
                 {/* Category Filter */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={2}>
                   <FormControl fullWidth variant="outlined" sx={{ bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white', borderRadius: '8px' }}>
                     <InputLabel id="category-select-label">Catégorie</InputLabel>
                     <Select
@@ -785,7 +974,7 @@ const Modules = () => {
                 </Grid>
                 
                 {/* Level Filter */}
-                <Grid item xs={12} sm={6} md={2.5}>
+                <Grid item xs={12} sm={6} md={2}>
                   <FormControl fullWidth variant="outlined" sx={{ bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white', borderRadius: '8px' }}>
                     <InputLabel id="level-select-label">Niveau</InputLabel>
                     <Select
@@ -804,8 +993,31 @@ const Modules = () => {
                   </FormControl>
                 </Grid>
                 
+                {/* Course Type Filter */}
+                <Grid item xs={12} sm={6} md={2}>
+                  <FormControl fullWidth variant="outlined" sx={{ bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white', borderRadius: '8px' }}>
+                    <InputLabel id="type-select-label">Type</InputLabel>
+                    <Select
+                      labelId="type-select-label"
+                      id="type-select"
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      label="Type"
+                    >
+                      {courseTypes.map((type) => (
+                        <MenuItem key={type.id} value={type.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {type.icon && <Box sx={{ mr: 1, color: theme.palette.primary.main }}>{type.icon}</Box>}
+                            {type.name}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                
                 {/* Sort By */}
-                <Grid item xs={12} sm={6} md={2.5}>
+                <Grid item xs={12} sm={6} md={2}>
                   <FormControl fullWidth variant="outlined" sx={{ bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white', borderRadius: '8px' }}>
                     <InputLabel id="sort-select-label">Trier par</InputLabel>
                     <Select
@@ -830,11 +1042,11 @@ const Modules = () => {
             {/* Results Summary */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="body1" color="text.secondary">
-                {loading ? 'Chargement des modules...' : `${filteredModules.length} module(s) trouvé(s)`}
+                {loading ? 'Chargement des cours...' : `${filteredCourses.length} cours trouvé(s)`}
               </Typography>
               
               {/* Clear Filters Button - Show only when filters are applied */}
-              {(searchQuery || selectedCategory !== 'all' || selectedLevel !== 'all' || sortBy !== 'popular') && !loading && (
+              {(searchQuery || selectedCategory !== 'all' || selectedLevel !== 'all' || selectedType !== 'all' || sortBy !== 'popular') && !loading && (
                 <Button 
                   variant="text" 
                   color="primary"
@@ -842,6 +1054,7 @@ const Modules = () => {
                     setSearchQuery('');
                     setSelectedCategory('all');
                     setSelectedLevel('all');
+                    setSelectedType('all');
                     setSortBy('popular');
                   }}
                   sx={{ textTransform: 'none' }}
@@ -856,13 +1069,13 @@ const Modules = () => {
               <Box sx={{ width: '100%', mb: 4 }}>
                 <LinearProgress />
                 <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
-                  Chargement des modules...
+                  Chargement des cours...
                 </Typography>
               </Box>
             )}
             
             {/* No Results Message */}
-            {!loading && filteredModules.length === 0 && (
+            {!loading && filteredCourses.length === 0 && (
               <Paper 
                 elevation={0} 
                 sx={{ 
@@ -874,7 +1087,7 @@ const Modules = () => {
                 }}
               >
                 <Typography variant="h6" gutterBottom>
-                  Aucun module ne correspond à vos critères
+                  Aucun cours ne correspond à vos critères
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                   Essayez d'ajuster vos filtres ou votre recherche pour trouver ce que vous cherchez.
@@ -885,6 +1098,7 @@ const Modules = () => {
                     setSearchQuery('');
                     setSelectedCategory('all');
                     setSelectedLevel('all');
+                    setSelectedType('all');
                     setSortBy('popular');
                   }}
                   sx={{ 
@@ -892,16 +1106,16 @@ const Modules = () => {
                     color: darkMode ? darkMode : '#0a0e17',
                   }}
                 >
-                  Voir tous les modules
+                  Voir tous les cours
                 </Button>
               </Paper>
             )}
             
-            {/* Modules Grid */}
-            {!loading && filteredModules.length > 0 && (
+            {/* Courses Grid */}
+            {!loading && filteredCourses.length > 0 && (
               <Grid container spacing={3}>
-                {currentModules.map((module) => (
-                  <Grid item key={module.id} xs={12} sm={6} md={3}>
+                {currentCourses.map((course) => (
+                  <Grid item key={course.id} xs={12} sm={6} md={4}>
                     <Card 
                       sx={{ 
                         height: '100%',
@@ -915,27 +1129,11 @@ const Modules = () => {
                         }
                       }}
                     >
-                      {/* Featured Badge */}
-                      {module.featured && (
-                        <Chip
-                          label="Populaire"
-                          color="primary"
-                          size="small"
-                          sx={{ 
-                            position: 'absolute', 
-                            top: 10, 
-                            left: 10, 
-                            zIndex: 1,
-                            fontWeight: 'bold'
-                          }}
-                        />
-                      )}
-                      
                       <CardMedia
                         component="img"
                         height="160"
-                        image={module.image}
-                        alt={module.title}
+                        image={course.image}
+                        alt={course.title}
                         sx={{ objectFit: 'cover' }}
                       />
                       
@@ -943,36 +1141,49 @@ const Modules = () => {
                         <Box sx={{ mb: 1, display: 'flex', gap: 1 }}>
                           <Chip 
                             size="small" 
-                            label={module.level} 
+                            label={course.level} 
                             sx={{ 
                               bgcolor: 'rgba(255,153,0,0.1)', 
                               color: theme.palette.primary.main,
                               fontWeight: 'medium'
                             }} 
                           />
+                          <Chip 
+                            size="small" 
+                            icon={getCourseTypeIcon(course.type)} 
+                            label={course.type === 'video' ? 'Vidéo' : course.type === 'article' ? 'Article' : 'Quiz'} 
+                            sx={{ 
+                              bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                              fontWeight: 'medium'
+                            }} 
+                          />
                         </Box>
                         
                         <Typography gutterBottom variant="h6" component="h3" sx={{ fontWeight: 'bold', lineHeight: 1.3 }}>
-                          {module.title}
+                          {course.title}
                         </Typography>
                         
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
-                          {module.description.length > 100 
-                            ? `${module.description.substring(0, 100)}...` 
-                            : module.description}
+                          {course.description.length > 100 
+                            ? `${course.description.substring(0, 100)}...` 
+                            : course.description}
                         </Typography>
                         
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <StarIcon sx={{ fontSize: '1rem', mr: 0.5, color: theme.palette.primary.main }} />
                             <Typography variant="body2" fontWeight="bold">
-                              {module.rating.toFixed(1)}
+                              {course.rating.toFixed(1)}
                             </Typography>
                           </Box>
                           <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                            ({module.reviews} avis)
+                            ({course.reviews} avis)
                           </Typography>
                         </Box>
+                        
+                        <Typography variant="body2" color="text.primary" sx={{ mt: 1, fontWeight: 'medium' }}>
+                          Module: {course.moduleName}
+                        </Typography>
                         
                         <Divider sx={{ my: 1.5 }} />
                         
@@ -980,16 +1191,13 @@ const Modules = () => {
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <AccessTimeIcon sx={{ fontSize: '0.85rem', mr: 0.5, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
-                              {module.duration}
+                              {course.duration}
                             </Typography>
                           </Box>
                           
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <SchoolIcon sx={{ fontSize: '0.85rem', mr: 0.5, color: 'text.secondary' }} />
-                            <Typography variant="body2" color="text.secondary">
-                              {module.lessons} cours
-                            </Typography>
-                          </Box>
+                          <Typography variant="body2" color="text.secondary">
+                            {course.instructor}
+                          </Typography>
                         </Box>
                         
                         <Button 
@@ -1005,9 +1213,9 @@ const Modules = () => {
                             }
                           }}
                           component={Link}
-                          to={`/modules/${module.id}`}
+                          to={`/courses/${course.id}`}
                         >
-                          Détails du module
+                          Détails du cours
                         </Button>
                       </CardContent>
                     </Card>
@@ -1017,7 +1225,7 @@ const Modules = () => {
             )}
             
             {/* Pagination */}
-            {!loading && filteredModules.length > modulesPerPage && (
+            {!loading && filteredCourses.length > coursesPerPage && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
                 <Pagination 
                   count={totalPages} 
@@ -1036,7 +1244,7 @@ const Modules = () => {
               </Box>
             )}
             
-            {/* Call to Action Section */}
+            {/* CTA Section */}
             <Paper 
               elevation={0} 
               sx={{ 
@@ -1055,9 +1263,22 @@ const Modules = () => {
                     Prêt à développer vos compétences ?
                   </Typography>
                   <Typography variant="body1" color="text.secondary" paragraph>
-                    Accédez à tous nos modules et parcours d'apprentissage personnalisés en vous inscrivant dès aujourd'hui.
+                    Accédez à tous nos cours et parcours d'apprentissage personnalisés en vous inscrivant dès aujourd'hui.
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Button 
+                      variant="contained"
+                      sx={{ 
+                        bgcolor: theme.palette.primary.main, 
+                        color: darkMode ? darkMode : '#0a0e17',
+                        px: 3,
+                        py: 1
+                      }}
+                      component={Link}
+                      to="/register"
+                    >
+                      S'inscrire gratuitement
+                    </Button>
                     <Button 
                       variant="outlined"
                       sx={{ 
@@ -1067,18 +1288,18 @@ const Modules = () => {
                         py: 1
                       }}
                       component={Link}
-                      to="/login"
+                      to="/pricing"
                     >
-                      se connecter
+                      Voir les offres premium
                     </Button>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
                   <Box
                     component="img"
-                    src="/images/bck24 (2).png"
+                    src="/images/learning-illustration.svg"
                     alt="Apprentissage en ligne"
-                    sx={{ width: '100%', maxWidth: '400px', display: 'block', mx: 'auto' }}
+                    sx={{ width: '100%', maxWidth: '300px', display: 'block', mx: 'auto' }}
                   />
                 </Grid>
               </Grid>
@@ -1132,8 +1353,8 @@ const Modules = () => {
                 </Typography>
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Link to="/modules" style={{ color: theme.palette.primary.main, textDecoration: 'none' }}>Modules</Link>
-                  <Link to="/courses" style={{ color: 'text.secondary', textDecoration: 'none' }}>Cours</Link>
+                  <Link to="/modules" style={{ color: 'text.secondary', textDecoration: 'none' }}>Modules</Link>
+                  <Link to="/courses" style={{ color: theme.palette.primary.main, textDecoration: 'none' }}>Cours</Link>
                   <Link to="/certifications" style={{ color: 'text.secondary', textDecoration: 'none' }}>Certifications</Link>
                   <Link to="/instructors" style={{ color: 'text.secondary', textDecoration: 'none' }}>Instructeurs</Link>
                 </Box>
@@ -1216,4 +1437,4 @@ const Modules = () => {
   );
 };
 
-export default Modules;
+export default Courses;
