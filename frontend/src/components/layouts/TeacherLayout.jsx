@@ -1,4 +1,4 @@
-// src/components/layouts/AdminLayout.jsx
+// src/components/layouts/TeacherLayout.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
@@ -29,7 +29,6 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  School as SchoolIcon,
   Assignment as AssignmentIcon,
   QuestionAnswer as QCMIcon,
   Event as ExamIcon,
@@ -42,7 +41,6 @@ import {
   ExpandMore,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  AdminPanelSettings as AdminIcon,
   SupervisorAccount as TeacherIcon,
   Analytics as AnalyticsIcon,
   Warning as WarningIcon,
@@ -51,27 +49,23 @@ import {
   Edit as EditIcon,
   ListAlt as ListIcon,
   Check as CheckIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  School as SchoolIcon,
+  Assessment as AssessmentIcon,
+  People as PeopleIcon,
+  DataUsage as DataUsageIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Largeur du drawer
 const drawerWidth = 260;
 
-const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
-  const { userRole, user, logout, hasPermission, ROLES } = useAuth();
+const TeacherLayout = ({ children, toggleDarkMode, darkMode }) => {
+  const { user, logout, hasPermission, ROLES } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // Debugging pour vérifier le rôle
-  useEffect(() => {
-    console.log("userRole dans AdminLayout:", userRole);
-    console.log("ROLES.ADMIN:", ROLES.ADMIN);
-    console.log("Est-ce un admin?", userRole === ROLES.ADMIN);
-    console.log("User data:", user);
-  }, [userRole, ROLES, user]);
   
   // État pour le drawer sur mobile
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,19 +78,9 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
   // État pour le menu de notifications
   const [notifMenuAnchorEl, setNotifMenuAnchorEl] = useState(null);
   
-  // Fonction pour obtenir le titre en fonction du rôle
-  const getLayoutTitle = () => {
-    if (userRole === ROLES.ADMIN) {
-      return "Espace Administrateur";
-  
-    } else {
-      return "SkillPath";
-    }
-  };
-  
-   // Fonction pour obtenir le nom à afficher
-   const getDisplayName = () => {
-    return user?.name || "admin";
+  // Fonction pour obtenir le nom à afficher
+  const getDisplayName = () => {
+    return user?.name || "Professeur";
   };
   
   // Simulation de notifications
@@ -158,31 +142,6 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
     return location.pathname.startsWith(basePath);
   };
   
-  // Générer une couleur de chip pour le rôle
-  const getRoleChipColor = () => {
-    if (userRole === ROLES.ADMIN) return 'error';
-    if (userRole === ROLES.TEACHER) return 'success';
-    return 'default';
-  };
-  
-  // Générer un libellé pour le rôle
-  const getRoleLabel = () => {
-    if (userRole === ROLES.ADMIN) return 'Admin';
-    if (userRole === ROLES.TEACHER) return 'Prof';
-    return userRole;
-  };
-  
-  // Dashboard destination based on role
-  const getDashboardPath = () => {
-    if (userRole === ROLES.ADMIN) {
-      return "/admin-dashboard";
-    } else if (userRole === ROLES.TEACHER) {
-      return "/teacher-dashboard";
-    } else {
-      return "/admin-dashboard";
-    }
-  };
-  
   // Contenu du drawer
   const drawer = (
     <Box>
@@ -192,8 +151,8 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
         alignItems: 'center', 
         justifyContent: 'space-between',
       }}>
-        <Typography variant="h6" component={Link} to={getDashboardPath()} sx={{ fontWeight: 'bold', color: '#ff9900', textDecoration: 'none' }}>
-          {getLayoutTitle()}
+        <Typography variant="h6" component={Link} to="/teacher-dashboard" sx={{ fontWeight: 'bold', color: '#4caf50', textDecoration: 'none' }}>
+          Espace Professeur
         </Typography>
         {isMobile && (
           <IconButton onClick={handleDrawerToggle}>
@@ -212,7 +171,7 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
             width: 64, 
             height: 64, 
             margin: '0 auto',
-            bgcolor: userRole === ROLES.ADMIN ? '#f44336' : '#4caf50',
+            bgcolor: '#4caf50',
           }}
         >
           {getDisplayName().charAt(0)}
@@ -222,10 +181,10 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
         </Typography>
         <Chip 
           size="small"
-          label={getRoleLabel()}
-          color={getRoleChipColor()}
+          label="Professeur"
+          color="success"
           sx={{ mt: 0.5 }}
-          icon={userRole === ROLES.ADMIN ? <AdminIcon fontSize="small" /> : <TeacherIcon fontSize="small" />}
+          icon={<TeacherIcon fontSize="small" />}
         />
         
         <FormControlLabel
@@ -244,239 +203,175 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
       
       {/* Navigation */}
       <List>
-        {/* Dashboard - accessible à tous */}
+        {/* Dashboard */}
         <ListItem disablePadding>
           <ListItemButton 
             component={Link} 
-            to={getDashboardPath()}
-            selected={isActive(getDashboardPath())}
+            to="/teacher-dashboard"
+            selected={isActive('/teacher-dashboard')}
           >
             <ListItemIcon>
-              <DashboardIcon color={isActive(getDashboardPath()) ? 'primary' : 'inherit'} />
+              <DashboardIcon color={isActive('/teacher-dashboard') ? 'primary' : 'inherit'} />
             </ListItemIcon>
             <ListItemText primary="Tableau de bord" />
           </ListItemButton>
         </ListItem>
         
-        {/* Gestion des modules - visible uniquement pour Admin */}
-        {hasPermission('createModule') && (
-          <ListItem disablePadding>
+        {/* Gestion des cours */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setCoursesOpen(!coursesOpen)}>
+            <ListItemIcon>
+              <AssignmentIcon color={isParentActive('/admin-courses') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="Cours" />
+            {coursesOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={coursesOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
             <ListItemButton 
               component={Link} 
-              to="/admin-modules"
-              selected={isActive('/admin-modules')}
+              to="/admin-courses"
+              selected={isActive('/admin-courses')}
+              sx={{ pl: 4 }}
             >
               <ListItemIcon>
-                <SchoolIcon color={isActive('/admin-modules') ? 'primary' : 'inherit'} />
+                <ListIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary="Modules de formation" />
+              <ListItemText primary="Mes cours" />
             </ListItemButton>
-          </ListItem>
-        )}
+            
+            <ListItemButton 
+              component={Link} 
+              to="/admin-courses/create"
+              selected={isActive('/admin-courses/create')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <CreateIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Créer un cours" />
+            </ListItemButton>
+          </List>
+        </Collapse>
         
-        {/* Gestion des cours - visible pour Admin et Prof mais avec des boutons différents */}
-<ListItem disablePadding>
-  <ListItemButton onClick={() => setCoursesOpen(!coursesOpen)}>
-    <ListItemIcon>
-      <AssignmentIcon color={isParentActive('/admin-courses') ? 'primary' : 'inherit'} />
-    </ListItemIcon>
-    <ListItemText primary="Cours" />
-    {coursesOpen ? <ExpandLess /> : <ExpandMore />}
-  </ListItemButton>
-</ListItem>
-<Collapse in={coursesOpen} timeout="auto" unmountOnExit>
-  <List component="div" disablePadding>
-    <ListItemButton 
-      component={Link} 
-      to="/admin-courses"
-      selected={isActive('/admin-courses')}
-      sx={{ pl: 4 }}
-    >
-      <ListItemIcon>
-        <ListIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText primary="Liste des cours" />
-    </ListItemButton>
-    
-    {/* Création de cours - uniquement pour les professeurs */}
-    {hasPermission('createCourse') && (
-      <ListItemButton 
-        component={Link} 
-        to="/admin-courses/create"
-        selected={isActive('/admin-courses/create')}
-        sx={{ pl: 4 }}
-      >
-        <ListItemIcon>
-          <CreateIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Créer un cours" />
-      </ListItemButton>
-    )}
-  </List>
-</Collapse>
+        {/* Gestion des QCM */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setQcmOpen(!qcmOpen)}>
+            <ListItemIcon>
+              <QCMIcon color={isParentActive('/adminn-qcm') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="QCM" />
+            {qcmOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={qcmOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton 
+              component={Link} 
+              to="/admin-qcm"
+              selected={isActive('/admin-qcm')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <ListIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Mes QCM" />
+            </ListItemButton>
+            
+            <ListItemButton 
+              component={Link} 
+              to="/admin-qcm/create"
+              selected={isActive('/admin-qcm/create')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <CreateIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Créer un QCM" />
+            </ListItemButton>
+          </List>
+        </Collapse>
         
-       {/* Gestion des QCM - avec permissions révisées */}
-<ListItem disablePadding>
-  <ListItemButton onClick={() => setQcmOpen(!qcmOpen)}>
-    <ListItemIcon>
-      <QCMIcon color={isParentActive('/admin-qcm') ? 'primary' : 'inherit'} />
-    </ListItemIcon>
-    <ListItemText primary="QCM" />
-    {qcmOpen ? <ExpandLess /> : <ExpandMore />}
-  </ListItemButton>
-</ListItem>
-<Collapse in={qcmOpen} timeout="auto" unmountOnExit>
-  <List component="div" disablePadding>
-    <ListItemButton 
-      component={Link} 
-      to="/admin-qcm"
-      selected={isActive('/admin-qcm')}
-      sx={{ pl: 4 }}
-    >
-      <ListItemIcon>
-        <ListIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText primary="Liste des QCM" />
-    </ListItemButton>
-    
-    {/* Création de QCM - uniquement pour les professeurs */}
-    {hasPermission('createQCM') && (
-      <ListItemButton 
-        component={Link} 
-        to="/admin-qcm/create"
-        selected={isActive('/admin-qcm/create')}
-        sx={{ pl: 4 }}
-      >
-        <ListItemIcon>
-          <CreateIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Créer un QCM" />
-      </ListItemButton>
-    )}
-  </List>
-</Collapse>
+        {/* Gestion des examens */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => setExamsOpen(!examsOpen)}>
+            <ListItemIcon>
+              <ExamIcon color={isParentActive('/admin-exams') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="Examens" />
+            {examsOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={examsOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton 
+              component={Link} 
+              to="/admin-exams"
+              selected={isActive('/admin-exams')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <ListIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Mes examens" />
+            </ListItemButton>
+            
+            <ListItemButton 
+              component={Link} 
+              to="/admin-exams/proctoring"
+              selected={isActive('/teacher-exams/proctoring')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <VisibilityIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Surveillance" />
+            </ListItemButton>
+            
+            <ListItemButton 
+              component={Link} 
+              to="/admin-exams/create"
+              selected={isActive('/admin-exams/create')}
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <CreateIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Créer un examen" />
+            </ListItemButton>
+          </List>
+        </Collapse>
         
-        {/* Gestion des examens - avec permissions révisées */}
-<ListItem disablePadding>
-  <ListItemButton onClick={() => setExamsOpen(!examsOpen)}>
-    <ListItemIcon>
-      <ExamIcon color={isParentActive('/admin-exams') ? 'primary' : 'inherit'} />
-    </ListItemIcon>
-    <ListItemText primary="Examens" />
-    {examsOpen ? <ExpandLess /> : <ExpandMore />}
-  </ListItemButton>
-</ListItem>
-<Collapse in={examsOpen} timeout="auto" unmountOnExit>
-  <List component="div" disablePadding>
-    <ListItemButton 
-      component={Link} 
-      to="/admin-exams"
-      selected={isActive('/admin-exams')}
-      sx={{ pl: 4 }}
-    >
-      <ListItemIcon>
-        <ListIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText primary="Liste des examens" />
-    </ListItemButton>
-    
-    {/* Surveillance d'examens - visible pour tous les admins */}
-    <ListItemButton 
-      component={Link} 
-      to="/admin-exams/proctoring"
-      selected={isActive('/admin-exams/proctoring')}
-      sx={{ pl: 4 }}
-    >
-      <ListItemIcon>
-        <VisibilityIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText primary="Surveillance" />
-    </ListItemButton>
-    
-    {/* Création d'examens - uniquement pour les professeurs */}
-    {hasPermission('createExam') && (
-      <ListItemButton 
-        component={Link} 
-        to="/admin-exams/create"
-        selected={isActive('/admin-exams/create')}
-        sx={{ pl: 4 }}
-      >
-        <ListItemIcon>
-          <CreateIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Créer un examen" />
-      </ListItemButton>
-    )}
-  </List>
-</Collapse>
-        
-        {/* Certificats - émission réservée aux admin système */}
-<ListItem disablePadding>
-  <ListItemButton 
-    component={Link} 
-    to="/admin/certificats"
-    selected={isActive('/admin/certificats')}
-  >
-    <ListItemIcon>
-      <CertificateIcon color={isActive('/admin/certificats') ? 'primary' : 'inherit'} />
-    </ListItemIcon>
-    <ListItemText primary="Certificats" />
-    {hasPermission('issueCertificate') && (
-      <Chip 
-        size="small" 
-        label="Contrôle total" 
-        color="primary" 
-        variant="outlined" 
-        sx={{ ml: 1, fontSize: '0.7rem' }} 
-      />
-    )}
-  </ListItemButton>
-</ListItem>
+        {/* Étudiants */}
+        <ListItem disablePadding>
+          <ListItemButton 
+            component={Link} 
+            to="/teacher-students"
+            selected={isActive('/teacher-students')}
+          >
+            <ListItemIcon>
+              <PeopleIcon color={isActive('/teacher-students') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="Mes étudiants" />
+          </ListItemButton>
+        </ListItem>
 
-{/* Statistiques - visible pour tous */}
-<ListItem disablePadding>
-  <ListItemButton 
-    component={Link} 
-    to="/admin/analytics"
-    selected={isActive('/admin/analytics')}
-  >
-    <ListItemIcon>
-      <AnalyticsIcon color={isActive('/admin/analytics') ? 'primary' : 'inherit'} />
-    </ListItemIcon>
-    <ListItemText primary="Statistiques" />
-  </ListItemButton>
-</ListItem>
-       {/* Gestion des utilisateurs - uniquement pour Admin */}
-{hasPermission('manageUsers') && (
-  <ListItem disablePadding>
-    <ListItemButton 
-      component={Link} 
-      to="/admin/users"
-      selected={isActive('/admin/users')}
-    >
-      <ListItemIcon>
-        <UserIcon color={isActive('/admin/users') ? 'primary' : 'inherit'} />
-      </ListItemIcon>
-      <ListItemText primary="Utilisateurs" />
-    </ListItemButton>
-  </ListItem>
-)}
+        {/* Certificats */}
+        <ListItem disablePadding>
+          <ListItemButton 
+            component={Link} 
+            to="/admin-certificates"
+            selected={isActive('/admin-certificates')}
+          >
+            <ListItemIcon>
+              <CertificateIcon color={isActive('/admin-certificates') ? 'primary' : 'inherit'} />
+            </ListItemIcon>
+            <ListItemText primary="Certificats" />
+          </ListItemButton>
+        </ListItem>
 
-{/* Paramètres - uniquement pour Admin */}
-{hasPermission('manageRoles') && (
-  <ListItem disablePadding>
-    <ListItemButton 
-      component={Link} 
-      to="/admin/settings"
-      selected={isActive('/admin/settings')}
-    >
-      <ListItemIcon>
-        <SettingsIcon color={isActive('/admin/settings') ? 'primary' : 'inherit'} />
-      </ListItemIcon>
-      <ListItemText primary="Paramètres" />
-    </ListItemButton>
-  </ListItem>
-)}
+      
       </List>
     </Box>
   );
@@ -504,7 +399,7 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {getLayoutTitle()}
+            Espace Professeur
           </Typography>
           
           {/* Notifications */}
@@ -559,7 +454,7 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
               <Typography 
                 variant="body2"
                 component={Link}
-                to="/admin/notifications"
+                to="/teacher-notifications"
                 sx={{ color: 'primary.main', textDecoration: 'none' }}
               >
                 Voir toutes les notifications
@@ -577,7 +472,7 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
                 alt={getDisplayName()} 
                 src={user?.profilePic || ""}
                 sx={{ 
-                  bgcolor: userRole === ROLES.ADMIN ? '#f44336' : '#f44336',
+                  bgcolor: '#4caf50',
                 }}
               >
                 {getDisplayName().charAt(0)}
@@ -604,19 +499,19 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
                 {getDisplayName()}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {user?.email || 'utilisateur@exemple.com'}
+                {user?.email || 'professeur@exemple.com'}
               </Typography>
             </Box>
             <Divider />
             <MenuItem onClick={() => {
               handleUserMenuClose();
-              navigate('/admin/profile');
+              navigate('/teacher/profile');
             }}>
               Mon profil
             </MenuItem>
             <MenuItem onClick={() => {
               handleUserMenuClose();
-              navigate('/admin/settings');
+              navigate('/teacher/settings');
             }}>
               Paramètres
             </MenuItem>
@@ -683,4 +578,4 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
   );
 };
 
-export default AdminLayout;
+export default TeacherLayout;

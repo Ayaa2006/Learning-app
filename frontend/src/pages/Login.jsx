@@ -1,6 +1,7 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Ajoute cette importation - tu devras installer axios: npm install axios
 import {
   Box,
   Container,
@@ -38,6 +39,9 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/common/Logo';
+
+// URL de base de l'API - à ajuster selon ton environnement
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Login = () => {
   // État pour le mode sombre/clair
@@ -127,32 +131,42 @@ const Login = () => {
   };
 
   // Connexion étudiant avec email académique et date de naissance
-  const handleStudentLogin = async (e) => {
-    e.preventDefault();
-    
-    if (!studentEmail) {
-      setError('Veuillez entrer votre email académique');
-      return;
-    }
-    
-    if (!birthDate) {
-      setError('Veuillez entrer votre date de naissance');
-      return;
-    }
+const handleStudentLogin = async (e) => {
+  e.preventDefault();
+  
+  if (!studentEmail) {
+    setError('Veuillez entrer votre email académique');
+    return;
+  }
+  
+  if (!birthDate) {
+    setError('Veuillez entrer votre date de naissance');
+    return;
+  }
 
-    try {
-      setLoading(true);
-      setError('');
+  try {
+    setLoading(true);
+    setError('');
+    
+    // Appel à l'API de connexion étudiant
+    const response = await axios.post(`${API_URL}/auth/login/student`, {
+      email: studentEmail,
+      birthDate: birthDate
+    });
+    
+    if (response.data.success) {
+      // Stocker le token JWT dans localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      // Simulation d'une requête API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mettre à jour les en-têtes pour les futures requêtes
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       
       // Créer un objet utilisateur avec les informations de l'étudiant
       const userData = {
-        id: Math.floor(Math.random() * 10000),
-        email: studentEmail,
-        name: studentEmail.split('@')[0], // Simulation d'un nom à partir de l'email
-        birthDate: birthDate,
+        id: response.data.user.id,
+        email: response.data.user.email,
+        name: response.data.user.name,
         role: ROLES.STUDENT
       };
       
@@ -162,62 +176,92 @@ const Login = () => {
       if (loginSuccess) {
         setLoginSuccess(true);
         // Rediriger vers le tableau de bord étudiant
-        navigate('/student-dashboard');
+        setTimeout(() => {
+          navigate('/student-dashboard');
+        }, 1500);
       } else {
         setError('Échec de la connexion. Veuillez réessayer.');
       }
-    } catch (err) {
-      setError('Identifiants incorrects. Veuillez réessayer.');
-    } finally {
-      setLoading(false);
+    } else {
+      setError(response.data.message || 'Échec de la connexion. Veuillez réessayer.');
     }
-  };
+  } catch (err) {
+    console.error('Erreur de connexion:', err);
+    setError(err.response?.data?.message || 'Identifiants incorrects. Veuillez réessayer.');
+  } finally {
+    setLoading(false);
+  }
+};
+// Connexion administrateur ou professeur
+const handleAdminLogin = async (e) => {
+  e.preventDefault();
+  
+  if (!adminEmail) {
+    setError('Veuillez entrer votre email académique');
+    return;
+  }
+  
+  if (!adminPassword) {
+    setError('Veuillez entrer votre mot de passe');
+    return;
+  }
 
-  // Connexion administrateur ou professeur
-  const handleAdminLogin = async (e) => {
-    e.preventDefault();
+  try {
+    setLoading(true);
+    setError('');
     
-    if (!adminEmail) {
-      setError('Veuillez entrer votre email académique');
-      return;
-    }
+    // Appel à l'API de connexion staff
+    const response = await axios.post(`${API_URL}/auth/login/staff`, {
+      email: adminEmail,
+      password: adminPassword,
+      role: adminRole
+    });
     
-    if (!adminPassword) {
-      setError('Veuillez entrer votre mot de passe');
-      return;
-    }
+    if (response.data.success) {
+      // Stocker le token JWT dans localStorage
+      localStorage.setItem('token', response.data.token);
+  localStorage.setItem('user', JSON.stringify(response.data.user));
+  
+  // Mettre à jour les en-têtes pour les futures requêtes
+  axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+  
+  // Créer un objet utilisateur avec les informations de l'admin/prof
+  const userData = {
+    id: response.data.user.id,
+    email: response.data.user.email,
+    name: response.data.user.name,
+    role: response.data.user.role
+  }; 
 
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Simulation d'une requête API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Créer un objet utilisateur avec les informations de l'admin/prof
-      const userData = {
-        id: Math.floor(Math.random() * 10000),
-        email: adminEmail,
-        name: adminEmail.split('@')[0], // Simulation d'un nom à partir de l'email
-        role: adminRole
-      };
+
       
       // Connexion via le contexte d'authentification
-      const loginSuccess = login(userData, adminRole);
+      const loginSuccess = login(userData, userData.role);
       
       if (loginSuccess) {
         setLoginSuccess(true);
         // Rediriger vers le tableau de bord approprié
-        navigate('/admin-dashboard');
+        setTimeout(() => {
+          // Vérifier le rôle pour la redirection
+          if (userData.role === ROLES.TEACHER) {
+            navigate('/teacher-dashboard'); // Nouveau chemin pour dashboard professeur
+          } else if (userData.role === ROLES.ADMIN) {
+            navigate('/admin-dashboard'); // Dashboard administrateur
+          }
+        }, 1500);
       } else {
         setError('Échec de la connexion. Veuillez réessayer.');
       }
-    } catch (err) {
-      setError('Identifiants administrateur incorrects. Veuillez réessayer.');
-    } finally {
-      setLoading(false);
+    } else {
+      setError(response.data.message || 'Échec de la connexion. Veuillez réessayer.');
     }
-  };
+  } catch (err) {
+    console.error('Erreur de connexion:', err);
+    setError(err.response?.data?.message || 'Identifiants administrateur incorrects. Veuillez réessayer.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Fonction pour accéder directement aux pages (pour test seulement)
   const goToPage = (page) => {
@@ -476,7 +520,7 @@ const Login = () => {
                       sx={{ mb: 3 }}
                     />
                     
-                    {/* Type d'utilisateur - PARTIE MODIFIÉE */}
+                    {/* Type d'utilisateur */}
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
                       Type d'utilisateur
                     </Typography>
@@ -541,90 +585,7 @@ const Login = () => {
               
               {/* Liens de test pour accéder directement aux pages (à enlever en production) */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
-                  Accès rapide aux pages (Test uniquement)
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/student-dashboard')}
-                      sx={{ mb: 1 }}
-                    >
-                      Dashboard Étudiant
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/admin-dashboard')}
-                      sx={{ mb: 1 }}
-                    >
-                      Dashboard Admin
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/admin-courses')}
-                      sx={{ mb: 1 }}
-                    >
-                      Gestion Cours
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/admin-qcm')}
-                      sx={{ mb: 1 }}
-                    >
-                      Gestion QCM
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/admin-exams')}
-                      sx={{ mb: 1 }}
-                    >
-                      Gestion Examens
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/admin/certificats')}
-                      sx={{ mb: 1 }}
-                    >
-                      Certificats
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/progress')}
-                      sx={{ mb: 1 }}
-                    >
-                      Progression
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/certificate')}
-                      sx={{ mb: 1 }}
-                    >
-                      Mes Certificats
-                    </Button>
-                  </Grid>
+        
                   <Grid item xs={6}>
                     <Button 
                       variant="outlined"
@@ -635,17 +596,6 @@ const Login = () => {
                       Commencer l'Examen
                     </Button>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Button 
-                      variant="outlined"
-                      fullWidth
-                      onClick={() => goToPage('/ExamWithProctoring')}
-                      sx={{ mb: 1, bgcolor: '#ff5722', color: 'white', '&:hover': { bgcolor: '#e64a19' } }}
-                    >
-                      Examen avec Surveillance
-                    </Button>
-                  </Grid>
-                </Grid>
               </Box>
               
               <Box sx={{ textAlign: 'center' }}>

@@ -45,6 +45,7 @@ import {
   Warning as WarningIcon
 } from '@mui/icons-material';
 import { mockExams, mockModules, mockCheatAttempts } from '../data/mockData';
+import AdminLayout from '../components/layouts/TeacherLayout';
 
 const AdminExams = () => {
   const [exams, setExams] = useState(mockExams);
@@ -78,6 +79,7 @@ const AdminExams = () => {
   };
   
   return (
+    
     <Box sx={{ py: 4, bgcolor: '#f5f7fb', minHeight: '100vh' }}>
       <Container maxWidth="xl">
         <Typography variant="h4" component="h1" sx={{ mb: 4, fontWeight: 'bold' }}>

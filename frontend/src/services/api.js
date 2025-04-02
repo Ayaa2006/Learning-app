@@ -1,24 +1,23 @@
+// src/services/api.js
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
-// Créer une instance d'axios avec une configuration de base
+const API_URL = 'http://localhost:5000/api';
+
+// Configurer axios pour envoyer le token JWT avec chaque requête
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Récupérer le token du localStorage s'il existe
-const token = localStorage.getItem('token');
-if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
-
-// Intercepteur pour les requêtes
+// Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use(
   (config) => {
-    // Vous pouvez modifier la configuration de la requête ici
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -26,49 +25,56 @@ api.interceptors.request.use(
   }
 );
 
-// Intercepteur pour les réponses
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    const { response } = error;
-    
-    // Gestion des erreurs 401 (non authentifié)
-    if (response && response.status === 401) {
-      // Supprimer le token invalide
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
-      
-      // Rediriger vers la page de connexion si l'utilisateur était authentifié
-      if (window.location.pathname !== '/login') {
-        toast.error('Votre session a expiré. Veuillez vous reconnecter.');
-        window.location.href = '/login';
-      }
-    }
-    
-    // Gestion des erreurs 403 (accès refusé)
-    if (response && response.status === 403) {
-      toast.error('Vous n\'avez pas les droits nécessaires pour effectuer cette action.');
-    }
-    
-    // Gestion des erreurs 404 (ressource non trouvée)
-    if (response && response.status === 404) {
-      toast.error('La ressource demandée n\'existe pas.');
-    }
-    
-    // Gestion des erreurs 500 (erreur serveur)
-    if (response && response.status >= 500) {
-      toast.error('Une erreur est survenue sur le serveur. Veuillez réessayer ultérieurement.');
-    }
-    
-    // Gestion des erreurs de connexion
-    if (!response) {
-      toast.error('Impossible de se connecter au serveur. Vérifiez votre connexion internet.');
-    }
-    
-    return Promise.reject(error);
-  }
-);
+// Services d'authentification
+export const authService = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (userData) => api.post('/auth/register', userData),
+  getProfile: () => api.get('/auth/me')
+};
+
+// Services du panneau d'administration
+export const adminService = {
+  // Dashboard
+  getDashboardStats: () => api.get('/admin/dashboard'),
+  
+  // Modules
+  getModules: () => api.get('/admin/modules'),
+  createModule: (moduleData) => api.post('/admin/modules', moduleData),
+  updateModule: (id, moduleData) => api.put(`/admin/modules/${id}`, moduleData),
+  deleteModule: (id) => api.delete(`/admin/modules/${id}`),
+  
+  // Cours
+  getCourses: () => api.get('/admin/courses'),
+  createCourse: (courseData) => api.post('/admin/courses', courseData),
+  updateCourse: (id, courseData) => api.put(`/admin/courses/${id}`, courseData),
+  deleteCourse: (id) => api.delete(`/admin/courses/${id}`),
+  
+  // QCM
+  getQuizzes: () => api.get('/admin/quizzes'),
+  getQuiz: (id) => api.get(`/admin/quizzes/${id}`),
+  createQuiz: (quizData) => api.post('/admin/quizzes', quizData),
+  updateQuiz: (id, quizData) => api.put(`/admin/quizzes/${id}`, quizData),
+  deleteQuiz: (id) => api.delete(`/admin/quizzes/${id}`),
+  
+  // Examens
+  getExams: () => api.get('/admin/exams'),
+  createExam: (examData) => api.post('/admin/exams', examData),
+  updateExam: (id, examData) => api.put(`/admin/exams/${id}`, examData),
+  deleteExam: (id) => api.delete(`/admin/exams/${id}`),
+  
+  // Détection de triche
+  getCheatIncidents: () => api.get('/admin/cheat-incidents'),
+  updateCheatDetectionSettings: (settings) => api.put('/admin/cheat-detection', settings),
+  
+  // Statistiques
+  getAnalytics: () => api.get('/admin/analytics'),
+  
+  // Utilisateurs
+  getStudents: () => api.get('/admin/students'),
+  
+  // Certificats
+  getCertificates: () => api.get('/admin/certificates')
+};
+
 
 export default api;

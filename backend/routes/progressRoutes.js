@@ -1,15 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-// Exemple de route POST avec une fonction de callback
+// Exemple de route POST
 router.post("/ajouter", (req, res) => {
-  // Logique pour ajouter des progrès
-  console.log(req.body); // Affiche les données envoyées dans la requête
+  const data = req.body;  // Données envoyées avec la requête POST
+  console.log("Données reçues : ", data);
 
-  // Exemple de réponse après traitement des données
-  res.status(201).json({ message: "Progrès ajoutés avec succès", progress: req.body });
+  // Logique de traitement ici
+  res.status(201).json({ message: "Progress ajouté avec succès", progress: data });
 });
-
-// Autres routes pour GET, PUT, DELETE, etc.
 
 module.exports = router;

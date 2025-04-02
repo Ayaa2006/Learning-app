@@ -1,6 +1,12 @@
-// context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
+
+// Définir les rôles possibles
+export const ROLES = {
+  STUDENT: 'STUDENT',
+  TEACHER: 'TEACHER',
+  ADMIN: 'ADMIN'
+};
 
 // Créer le contexte
 const AuthContext = createContext();
@@ -34,12 +40,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Fonction de connexion
-  const login = async (email, password) => {
+  const login = async (email, password, role) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await api.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password, role });
       const { user, token } = response.data;
       
       // Stocker le token et les infos utilisateur dans localStorage
@@ -70,10 +76,13 @@ export function AuthProvider({ children }) {
     return currentUser?.role === role;
   };
 
-  // Vérifier si l'utilisateur est administrateur
-  const isAdmin = () => {
-    return hasRole('admin');
-  };
+  // Vérifier les rôles spécifiques
+  const isAdmin = () => hasRole(ROLES.ADMIN);
+  const isTeacher = () => hasRole(ROLES.TEACHER);
+  const isStudent = () => hasRole(ROLES.STUDENT);
+
+  // Vérifier si l'utilisateur est authentifié
+  const isAuthenticated = () => !!currentUser;
 
   // Valeur du contexte
   const value = {
@@ -83,7 +92,11 @@ export function AuthProvider({ children }) {
     login,
     logout,
     hasRole,
-    isAdmin
+    isAdmin,
+    isTeacher,
+    isStudent,
+    isAuthenticated,
+    ROLES // Ajouter les rôles pour pouvoir les utiliser dans d'autres composants
   };
 
   return (

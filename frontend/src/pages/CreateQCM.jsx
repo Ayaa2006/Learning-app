@@ -50,8 +50,9 @@ import {
   FileCopy as FileCopyIcon,
   Shuffle as ShuffleIcon
 } from '@mui/icons-material';
-import AdminLayout from '../components/layouts/AdminLayout';
+import AdminLayout from '../components/layouts/TeacherLayout';
 import { useAuth } from '../contexts/AuthContext';
+import TeacherLayout from '../components/layouts/TeacherLayout';
 
 // Données fictives des cours disponibles
 const mockCourses = [
@@ -457,7 +458,7 @@ const CreateQCM = ({ darkMode, toggleDarkMode }) => {
   };
   
   return (
-    <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
+    <TeacherLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
       <Box sx={{ py: 4, bgcolor: darkMode ? 'background.default' : '#f5f7fb', minHeight: '100vh' }}>
         <Container maxWidth="lg">
           {/* En-tête */}
@@ -1140,7 +1141,7 @@ const CreateQCM = ({ darkMode, toggleDarkMode }) => {
           <Button onClick={() => setHelpDialogOpen(false)}>Fermer</Button>
         </DialogActions>
       </Dialog>
-    </AdminLayout>
+    </TeacherLayout>
   );
 };
 

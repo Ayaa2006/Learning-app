@@ -45,7 +45,7 @@ import {
   FormatQuote as FormatQuoteIcon,
   Image as ImageIcon
 } from '@mui/icons-material';
-import AdminLayout from '../components/layouts/AdminLayout';
+import AdminLayout from '../components/layouts/TeacherLayout';
 import { useAuth } from '../contexts/AuthContext';
 
 // Données fictives des modules disponibles

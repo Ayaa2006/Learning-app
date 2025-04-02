@@ -1,14 +1,13 @@
 import './index.css';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import axios from 'axios';
 
 // Context d'authentification
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import CreateQCM from "./pages/CreateQCM";
-import CreateExam from "./pages/CreateExam";
 
 // Import des pages
 import Home from "./pages/Home";
@@ -29,9 +28,29 @@ import ModuleDetails from './pages/ModuleDetails';
 import ExamPage from './pages/ExamPage';
 import ExamWithProctoring from './pages/ExamWithProctoring';
 import NotFound from './pages/NotFound';
-// Ajoutez cette ligne avec vos autres imports
 import AdminAnalytics from "./pages/AdminAnalytics";
 import CreateCourse from "./pages/CreateCourse";
+import CreateExam from "./pages/CreateExam";
+import CreateQCM from "./pages/CreateQCM";
+import TeacherDashboard from "./pages/TeacherDashboard";
+
+
+// Configuration d'Axios pour les requêtes API
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// Intercepteur pour ajouter le token à chaque requête
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 function App() {
   // État pour le mode sombre/clair
@@ -97,6 +116,7 @@ function App() {
             <Route path="/login" element={<Login toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
             <Route path="/webcam-test" element={<WebcamTest />} />
             <Route path="/demo" element={<Demo />} />
+           
             
             {/* Routes étudiants - protégées */}
             <Route 
@@ -166,13 +186,24 @@ function App() {
             
             {/* Routes administratives - protégées avec permissions */}
             <Route 
-              path="/admin-dashboard" 
-              element={
-                <ProtectedRoute requiredPermissions={['viewDashboard']}>
-                  <AdminDashboard toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-                </ProtectedRoute>
-              } 
-            />
+    path="/teacher-dashboard" 
+    element={
+      <ProtectedRoute requiredPermissions={['viewDashboard']}>
+        <TeacherDashboard toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+      </ProtectedRoute>
+    } 
+  />
+  
+  {/* Routes administratives - protégées avec permissions */}
+  <Route 
+    path="/admin-dashboard" 
+    element={
+      <ProtectedRoute requiredPermissions={['viewDashboard']}>
+        <AdminDashboard toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+      </ProtectedRoute>
+    } 
+  />
+         
             <Route 
               path="/admin-courses" 
               element={
@@ -206,41 +237,40 @@ function App() {
               } 
             />
 
-<Route 
-  path="/admin/analytics" 
-  element={
-    <ProtectedRoute requiredPermissions={['viewStatistics']}>
-      <AdminAnalytics toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-    </ProtectedRoute>
-  } 
-/>
-<Route 
-  path="/admin-courses/create" 
-  element={
-    <ProtectedRoute requiredPermissions={['createCourse']}>
-      <CreateCourse toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-    </ProtectedRoute>
-  } 
-/>
-<Route 
-  path="/admin-qcm/create" 
-  element={
-    <ProtectedRoute requiredPermissions={['createQCM']}>
-      <CreateQCM toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-    </ProtectedRoute>
-  } 
-/>
-<Route 
-  path="/admin-exams/create" 
-  element={
-    <ProtectedRoute requiredPermissions={['createExam']}>
-      <CreateExam toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-    </ProtectedRoute>
-  } 
-/>
-            
+            <Route 
+              path="/admin/analytics" 
+              element={
+                <ProtectedRoute requiredPermissions={['viewStatistics']}>
+                  <AdminAnalytics toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin-courses/create" 
+              element={
+                <ProtectedRoute requiredPermissions={['createCourse']}>
+                  <CreateCourse toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin-exams/create" 
+              element={
+                <ProtectedRoute requiredPermissions={['createExam']}>
+                  <CreateExam toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin-qcm/create" 
+              element={
+                <ProtectedRoute requiredPermissions={['createQCM']}>
+                  <CreateQCM toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+                </ProtectedRoute>
+              } 
+            />
             {/* Redirection par défaut et page 404 */}
-            <Route path="*" element={<div>Page non trouvée</div>} />
+            <Route path="*" element={<NotFound toggleDarkMode={toggleDarkMode} darkMode={darkMode} />} />
           </Routes>
         </Router>
       </AuthProvider>

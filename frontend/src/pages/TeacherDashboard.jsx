@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx
+// src/pages/TeacherDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
@@ -25,8 +25,8 @@ import {
   Person as PersonIcon, 
   School as SchoolIcon, 
   Assignment as AssignmentIcon, 
-  VerifiedUser as VerifiedUserIcon, 
-  Warning as WarningIcon,
+  Quiz as QuizIcon, 
+  BookmarkAdd as BookmarkAddIcon,
   DonutLarge as DonutLargeIcon,
   TrendingUp as TrendingUpIcon,
   Group as GroupIcon,
@@ -35,20 +35,23 @@ import {
   Logout as LogoutIcon,
   Settings as SettingsIcon,
   AccountCircle as AccountCircleIcon,
-  AdminPanelSettings as AdminIcon
+  SupervisorAccount as TeacherIcon,
+  AddCircleOutline as AddCircleOutlineIcon,
+  Edit as EditIcon,
+  Assessment as AssessmentIcon
 } from '@mui/icons-material';
-import AdminLayout from '../components/layouts/AdminLayout';
+import AdminLayout from '../components/layouts/TeacherLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { adminService } from '../services/api';
 
-const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
+const TeacherDashboard = ({ toggleDarkMode, darkMode }) => {
   const { user, hasPermission, ROLES, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
-  const [recentUsers, setRecentUsers] = useState([]);
-  const [popularModules, setPopularModules] = useState([]);
-  const [cheatAttempts, setCheatAttempts] = useState([]);
+  const [myCourses, setMyCourses] = useState([]);
+  const [myQuizzes, setMyQuizzes] = useState([]);
+  const [studentProgress, setStudentProgress] = useState([]);
   const navigate = useNavigate();
 
   // Effet pour charger les données
@@ -56,13 +59,13 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await adminService.getDashboardStats();
+        const response = await adminService.getTeacherDashboardStats();
         const dashboardData = response.data.data;
         
         setStats(dashboardData.stats);
-        setRecentUsers(dashboardData.recentUsers);
-        setPopularModules(dashboardData.popularModules);
-        setCheatAttempts(dashboardData.cheatAttempts);
+        setMyCourses(dashboardData.myCourses || []);
+        setMyQuizzes(dashboardData.myQuizzes || []);
+        setStudentProgress(dashboardData.studentProgress || []);
       } catch (error) {
         console.error("Erreur lors du chargement des données:", error);
       } finally {
@@ -77,6 +80,21 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+  
+  // Fonction pour créer un nouveau cours
+  const handleCreateCourse = () => {
+    navigate('/admin-courses/create');
+  };
+  
+  // Fonction pour créer un nouveau QCM
+  const handleCreateQuiz = () => {
+    navigate('/admin-qcm/create');
+  };
+  
+  // Fonction pour créer un nouvel examen
+  const handleCreateExam = () => {
+    navigate('/admin-exams/create');
   };
   
   // Composant pour les cartes statistiques
@@ -99,12 +117,12 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
         <Container maxWidth="xl">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
             <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
-              Tableau de Bord Administrateur
+              Tableau de Bord Enseignant
             </Typography>
             <Chip 
-              label={user?.name || 'Administrateur'} 
-              color="error"
-              icon={<AdminIcon />}
+              label={user?.name || 'Professeur'} 
+              color="success"
+              icon={<TeacherIcon />}
             />
           </Box>
           
@@ -114,59 +132,98 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
             </Box>
           ) : (
             <>
+              {/* Actions rapides */}
+              <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+                <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold', mb: 2 }}>
+                  Actions rapides
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Button 
+                      variant="outlined" 
+                      fullWidth
+                      startIcon={<AddCircleOutlineIcon />}
+                      onClick={handleCreateCourse}
+                      sx={{ 
+                        p: 1.5,
+                        borderColor: '#4caf50',
+                        color: '#4caf50',
+                        '&:hover': { borderColor: '#2e7d32', color: '#2e7d32', bgcolor: 'rgba(76, 175, 80, 0.04)' }
+                      }}
+                    >
+                      Créer un nouveau cours
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button 
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<AddCircleOutlineIcon />}
+                      onClick={handleCreateQuiz}
+                      sx={{ 
+                        p: 1.5,
+                        borderColor: '#2196f3',
+                        color: '#2196f3',
+                        '&:hover': { borderColor: '#0d47a1', color: '#0d47a1', bgcolor: 'rgba(33, 150, 243, 0.04)' }
+                      }}
+                    >
+                      Créer un nouveau QCM
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button 
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<AddCircleOutlineIcon />}
+                      onClick={handleCreateExam}
+                      sx={{ 
+                        p: 1.5,
+                        borderColor: '#ff9800',
+                        color: '#ff9800',
+                        '&:hover': { borderColor: '#e65100', color: '#e65100', bgcolor: 'rgba(255, 152, 0, 0.04)' }
+                      }}
+                    >
+                      Créer un nouvel examen
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Paper>
+            
               {/* Statistiques générales */}
               <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={4} lg={2}>
+                <Grid item xs={12} sm={6} md={3}>
                   <StatCard 
-                    icon={<PersonIcon sx={{ fontSize: 48, color: '#ff9900', mb: 1 }} />}
-                    value={stats?.totalStudents}
-                    label="Étudiants Total"
-                    color="#ff9900"
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} lg={2}>
-                  <StatCard 
-                    icon={<SchoolIcon sx={{ fontSize: 48, color: '#4caf50', mb: 1 }} />}
-                    value={stats?.activeStudents}
-                    label="Étudiants Actifs"
+                    icon={<AssignmentIcon sx={{ fontSize: 48, color: '#4caf50', mb: 1 }} />}
+                    value={stats?.totalCourses || 0}
+                    label="Mes Cours"
                     color="#4caf50"
                   />
                 </Grid>
                 
-                <Grid item xs={12} sm={6} md={4} lg={2}>
+                <Grid item xs={12} sm={6} md={3}>
                   <StatCard 
-                    icon={<AssignmentIcon sx={{ fontSize: 48, color: '#2196f3', mb: 1 }} />}
-                    value={stats?.completedModules}
-                    label="Modules Complétés"
+                    icon={<QuizIcon sx={{ fontSize: 48, color: '#2196f3', mb: 1 }} />}
+                    value={stats?.totalQuizzes || 0}
+                    label="Mes QCM"
                     color="#2196f3"
                   />
                 </Grid>
                 
-                <Grid item xs={12} sm={6} md={4} lg={2}>
+                <Grid item xs={12} sm={6} md={3}>
                   <StatCard 
-                    icon={<VerifiedUserIcon sx={{ fontSize: 48, color: '#673ab7', mb: 1 }} />}
-                    value={stats?.issuedCertificates}
-                    label="Certificats Émis"
+                    icon={<AssessmentIcon sx={{ fontSize: 48, color: '#ff9800', mb: 1 }} />}
+                    value={stats?.totalExams || 0}
+                    label="Mes Examens"
+                    color="#ff9800"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6} md={3}>
+                  <StatCard 
+                    icon={<PersonIcon sx={{ fontSize: 48, color: '#673ab7', mb: 1 }} />}
+                    value={stats?.totalStudents || 0}
+                    label="Étudiants Inscrits"
                     color="#673ab7"
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} lg={2}>
-                  <StatCard 
-                    icon={<WarningIcon sx={{ fontSize: 48, color: '#f44336', mb: 1 }} />}
-                    value={stats?.cheatAttempts}
-                    label="Tentatives de Triche"
-                    color="#f44336"
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} lg={2}>
-                  <StatCard 
-                    icon={<DonutLargeIcon sx={{ fontSize: 48, color: '#009688', mb: 1 }} />}
-                    value={`${stats?.averageScore}%`}
-                    label="Score Moyen"
-                    color="#009688"
                   />
                 </Grid>
               </Grid>
@@ -192,23 +249,23 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                           width: 80, 
                           height: 80, 
                           mb: 2,
-                          bgcolor: '#f44336'
+                          bgcolor: '#4caf50'
                         }}
                       >
                         {user?.name?.charAt(0) || <AccountCircleIcon />}
                       </Avatar>
                       
                       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        {user?.name || 'Administrateur'}
+                        {user?.name || 'Professeur'}
                       </Typography>
                       
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {user?.email || 'admin@skillpath.com'}
+                        {user?.email || 'prof@skillpath.com'}
                       </Typography>
                       
                       <Chip 
-                        label="Administrateur système" 
-                        color="error"
+                        label="Enseignant" 
+                        color="success"
                         size="small"
                         sx={{ mb: 3 }}
                       />
@@ -235,36 +292,33 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Modules Populaires
+                        Mes Cours
                       </Typography>
                       <Button 
                         variant="outlined" 
                         size="small"
-                        startIcon={<SchoolIcon />}
+                        startIcon={<AssignmentIcon />}
+                        onClick={() => navigate('/admin-courses')}
+                        color="success"
                       >
-                        Tous les modules
+                        Tous mes cours
                       </Button>
                     </Box>
                     <List>
-                      {popularModules.length > 0 ? (
-                        popularModules.map((module) => (
-                          <React.Fragment key={module.id}>
+                      {myCourses.length > 0 ? (
+                        myCourses.map((course) => (
+                          <React.Fragment key={course.id}>
                             <ListItem>
                               <ListItemText 
                                 primary={(
                                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography variant="body1">{module.title}</Typography>
-                                    <Chip 
-                                      size="small" 
-                                      label={`${module.completionRate}%`}
-                                      sx={{ 
-                                        bgcolor: module.completionRate > 75 ? '#e8f5e9' : '#fff3e0',
-                                        color: module.completionRate > 75 ? '#2e7d32' : '#e65100'
-                                      }}
-                                    />
+                                    <Typography variant="body1">{course.title}</Typography>
+                                    <IconButton size="small" color="primary">
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
                                   </Box>
                                 )} 
-                                secondary={`${module.enrolledStudents} étudiants • ${module.completionRate}% taux de complétion`}
+                                secondary={`${course.enrolledStudents} étudiants • Créé le ${course.createdAt}`}
                               />
                             </ListItem>
                             <Divider component="li" />
@@ -273,7 +327,7 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                       ) : (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary">
-                            Aucun module disponible
+                            Aucun cours disponible
                           </Typography>
                         </Box>
                       )}
@@ -286,40 +340,42 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Dernières connexions
+                        Mes QCM
                       </Typography>
                       <Button 
                         variant="outlined" 
                         size="small"
-                        startIcon={<GroupIcon />}
+                        startIcon={<QuizIcon />}
+                        onClick={() => navigate('/admin-qcm')}
+                        color="primary"
                       >
-                        Tous les étudiants
+                        Tous mes QCM
                       </Button>
                     </Box>
                     <List>
-                      {recentUsers.length > 0 ? (
-                        recentUsers.map((user) => (
-                          <React.Fragment key={user.id}>
+                      {myQuizzes.length > 0 ? (
+                        myQuizzes.map((quiz) => (
+                          <React.Fragment key={quiz.id}>
                             <ListItem>
                               <ListItemText 
                                 primary={(
                                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography variant="body1">{user.name}</Typography>
+                                    <Typography variant="body1">{quiz.title}</Typography>
                                     <Box>
-                                      <Tooltip title="Voir le profil">
-                                        <IconButton size="small" sx={{ ml: 1 }}>
-                                          <VisibilityIcon fontSize="small" />
+                                      <Tooltip title="Modifier">
+                                        <IconButton size="small" sx={{ ml: 1 }} color="primary">
+                                          <EditIcon fontSize="small" />
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip title="Envoyer un message">
-                                        <IconButton size="small" sx={{ ml: 0.5 }}>
-                                          <MailIcon fontSize="small" />
+                                      <Tooltip title="Voir les résultats">
+                                        <IconButton size="small" sx={{ ml: 0.5 }} color="success">
+                                          <VisibilityIcon fontSize="small" />
                                         </IconButton>
                                       </Tooltip>
                                     </Box>
                                   </Box>
                                 )} 
-                                secondary={`${user.email} • ${user.lastLogin}`}
+                                secondary={`${quiz.questions} questions • ${quiz.completions} complétions`}
                               />
                             </ListItem>
                             <Divider component="li" />
@@ -328,7 +384,7 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                       ) : (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary">
-                            Aucune connexion récente
+                            Aucun QCM disponible
                           </Typography>
                         </Box>
                       )}
@@ -338,48 +394,49 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Incidents récents de triche
+                        Mes Examens
                       </Typography>
                       <Button 
                         variant="outlined" 
                         size="small"
-                        color="error"
-                        startIcon={<WarningIcon />}
+                        startIcon={<AssessmentIcon />}
+                        onClick={() => navigate('/admin-exams')}
+                        sx={{ color: '#ff9800', borderColor: '#ff9800' }}
                       >
-                        Tous les incidents
+                        Tous mes examens
                       </Button>
                     </Box>
-                    {cheatAttempts.length > 0 ? (
-                      <List>
-                        {cheatAttempts.map((attempt) => (
-                          <React.Fragment key={attempt.id}>
+                    <List>
+                      {stats?.exams && stats.exams.length > 0 ? (
+                        stats.exams.map((exam) => (
+                          <React.Fragment key={exam.id}>
                             <ListItem>
                               <ListItemText 
                                 primary={(
                                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography variant="body1">{attempt.studentName}</Typography>
+                                    <Typography variant="body1">{exam.title}</Typography>
                                     <Chip 
                                       size="small" 
-                                      label={attempt.type}
-                                      color="error"
+                                      label={exam.status}
+                                      color={exam.status === 'Actif' ? 'success' : 'default'}
                                       variant="outlined"
                                     />
                                   </Box>
                                 )} 
-                                secondary={`${attempt.examTitle} • ${attempt.date} à ${attempt.timestamp}`}
+                                secondary={`${exam.module} • ${exam.date}`}
                               />
                             </ListItem>
                             <Divider component="li" />
                           </React.Fragment>
-                        ))}
-                      </List>
-                    ) : (
-                      <Box sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Aucun incident récent
-                        </Typography>
-                      </Box>
-                    )}
+                        ))
+                      ) : (
+                        <Box sx={{ textAlign: 'center', py: 2 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Aucun examen disponible
+                          </Typography>
+                        </Box>
+                      )}
+                    </List>
                   </Paper>
                 </Grid>
                 
@@ -388,50 +445,58 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Progression Mensuelle
+                        Progression des Étudiants
                       </Typography>
                       <Button 
                         variant="outlined" 
                         size="small"
                         startIcon={<TrendingUpIcon />}
+                        onClick={() => navigate('/admin/analytics')}
                       >
-                        Statistiques détaillées
+                        Détails
                       </Button>
                     </Box>
-                    <Box sx={{ height: 300, p: 2 }}>
-                      {stats?.monthlyProgress && stats.monthlyProgress.length > 0 ? (
-                        stats.monthlyProgress.map((data, index) => (
-                          <Card key={index} sx={{ mb: 2, borderLeft: '4px solid #ff9900' }}>
+                    <Box sx={{ height: 300, overflowY: 'auto', p: 2 }}>
+                      {studentProgress.length > 0 ? (
+                        studentProgress.map((student, index) => (
+                          <Card key={index} sx={{ mb: 2, borderLeft: '4px solid #4caf50' }}>
                             <CardContent>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography variant="subtitle1" component="div">
-                                  {data.month} 2025
+                                  {student.name}
                                 </Typography>
-                                <Stack direction="row" spacing={1}>
-                                  <Chip size="small" label={`${data.students} étudiants`} />
-                                  <Chip size="small" label={`${data.completions} modules`} color="primary" />
-                                </Stack>
+                                <Chip 
+                                  size="small" 
+                                  label={`${student.progress}%`}
+                                  color={student.progress > 75 ? 'success' : 'warning'}
+                                />
                               </Box>
-                              <Box sx={{ mt: 1 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {student.email} • Module: {student.currentModule}
+                              </Typography>
+                              <Box sx={{ 
+                                height: 6, 
+                                bgcolor: '#e0e0e0', 
+                                borderRadius: 3,
+                                position: 'relative',
+                                overflow: 'hidden'
+                              }}>
                                 <Box sx={{ 
-                                  height: 6, 
-                                  bgcolor: '#e0e0e0', 
-                                  borderRadius: 3,
-                                  position: 'relative',
-                                  overflow: 'hidden'
-                                }}>
-                                  <Box sx={{ 
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    height: '100%',
-                                    width: `${(data.completions / data.students) * 100}%`,
-                                    bgcolor: '#ff9900',
-                                    borderRadius: 3
-                                  }}/>
-                                </Box>
-                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                  Taux de complétion: {Math.round((data.completions / data.students) * 100)}%
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  height: '100%',
+                                  width: `${student.progress}%`,
+                                  bgcolor: student.progress > 75 ? '#4caf50' : '#ff9800',
+                                  borderRadius: 3
+                                }}/>
+                              </Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  {student.completedModules} modules terminés
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  Dernière activité: {student.lastActivity}
                                 </Typography>
                               </Box>
                             </CardContent>
@@ -456,4 +521,4 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
   );
 };
 
-export default AdminDashboard;
+export default TeacherDashboard;

@@ -74,8 +74,9 @@ import {
   DesktopMac as DesktopMacIcon,
   TabletAndroid as TabletAndroidIcon
 } from '@mui/icons-material';
-import AdminLayout from '../components/layouts/AdminLayout';
+import AdminLayout from '../components/layouts/TeacherLayout';
 import { useAuth } from '../contexts/AuthContext';
+import TeacherLayout from '../components/layouts/TeacherLayout';
 
 // Données fictives des modules disponibles
 const mockModules = [
@@ -583,7 +584,7 @@ const CreateExam = ({ darkMode, toggleDarkMode }) => {
   };
   
   return (
-    <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
+    <TeacherLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
       <Box sx={{ py: 4, bgcolor: darkMode ? 'background.default' : '#f5f7fb', minHeight: '100vh' }}>
         <Container maxWidth="lg">
           {/* En-tête */}
@@ -1663,7 +1664,7 @@ const CreateExam = ({ darkMode, toggleDarkMode }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </AdminLayout>
+    </TeacherLayout>
   );
 };
 

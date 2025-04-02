@@ -1,63 +1,44 @@
-// middlewares/authMiddleware.js
+// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/user.model');
 
-const authMiddleware = async (req, res, next) => {
-  try {
-    // Vérifier si le token existe dans les headers
-    let token;
-    if (
-      req.headers.authorization && 
-      req.headers.authorization.startsWith('Bearer')
-    ) {
-      // Récupérer le token du header "Bearer <token>"
-      token = req.headers.authorization.split(' ')[1];
-    }
+// Middleware pour vérifier l'authentification
+exports.protect = async (req, res, next) => {
+  let token;
 
-    // Si pas de token, renvoyer une erreur
-    if (!token) {
-      return res.status(401).json({ 
-        message: 'Accès non autorisé, token manquant' 
-      });
-    }
-
+  // Vérifier si l'en-tête Authorization est présent et commence par 'Bearer'
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
+      // Extraire le token
+      token = req.headers.authorization.split(' ')[1];
+      console.log('Token reçu:', token);
+
       // Vérifier le token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Récupérer l'utilisateur du token
-      const user = await User.findById(decoded.id).select('-password');
-
-      // Si utilisateur non trouvé
-      if (!user) {
-        return res.status(401).json({ 
-          message: 'Utilisateur non trouvé ou token invalide' 
-        });
-      }
-
-      // Vérifier le statut de l'utilisateur
-      if (user.status !== 'active') {
-        return res.status(403).json({
-          message: 'Compte désactivé ou suspendu. Veuillez contacter l\'administrateur.'
-        });
-      }
+      console.log('Token décodé:', decoded);
 
       // Ajouter l'utilisateur à la requête
-      req.user = user;
+      req.user = await User.findById(decoded.id).select('-password');
       next();
     } catch (error) {
-      console.error('JWT Verification Error:', error.message);
-      
-      return res.status(401).json({ 
-        message: 'Token invalide ou expiré' 
-      });
+      console.error('Erreur d\'authentification:', error);
+      return res.status(401).json({ message: 'Non autorisé, token invalide' });
     }
-  } catch (error) {
-    console.error('Auth Middleware Error:', error);
-    return res.status(500).json({ 
-      message: 'Erreur du serveur d\'authentification'
-    });
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: 'Non autorisé, aucun token fourni' });
   }
 };
 
-module.exports = authMiddleware;
+// Middleware pour vérifier les rôles
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: 'Accès refusé, autorisation insuffisante' 
+      });
+    }
+    next();
+  };
+};

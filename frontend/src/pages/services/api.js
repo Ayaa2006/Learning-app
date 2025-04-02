@@ -79,3 +79,5 @@ export const fetchUserProgress = async (userId) => {
   const response = await api.get(`/api/users/${userId}/progress`);
   return response.data;
 };
+
+
