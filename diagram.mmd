@@ -1,0 +1,27 @@
+%% Diagramme de Cas d'Utilisation SkillPath
+graph TD
+   
+    Étudiant -->|Se connecter| SeConnecter
+    Étudiant -->|Suivre un cours| SuivreCours
+    Étudiant -->|Passer un QCM| PasserQCM
+    Étudiant -->|Passer un examen| PasserExamen
+    Étudiant -->|Consulter progression| ConsulterProgression
+    Étudiant -->|Obtenir un certificat| ObtenirCertificat
+    Étudiant -->|Gérer profil| GérerProfil
+    Étudiant -->|Voir notifications| VoirNotifications
+    
+    Professeur -->|Créer des cours| CreerCours
+    Professeur -->|Créer des QCM| CreerQCM
+    Professeur -->|Créer des examens| CreerExamens
+    Professeur -->|Suivre progression des étudiants| SuivreProgression
+    Professeur -->|Gérer les modules| GérerModules
+    Professeur -->|Consulter statistiques| ConsulterStatistiques
+    Professeur -->|Générer rapports| GenererRapports
+    
+    Administrateur -->|Gérer les utilisateurs| GererUtilisateurs
+    Administrateur -->|Configurer la plateforme| ConfigurerPlateforme
+    Administrateur -->|Surveiller les incidents de triche| SurveillerTriche
+    Administrateur -->|Générer des rapports globaux| GenererRapportsGlobaux
+    Administrateur -->|Gérer les modules de formation| GererModulesFormation
+    Administrateur -->|Analyser les statistiques globales| AnalyserStatistiques
+    Administrateur -->|Gérer les certificats| GererCertificats

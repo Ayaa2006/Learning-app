@@ -13,24 +13,29 @@ import {
   ListItemText, 
   Divider, 
   IconButton, 
-  TextField, 
-  FormControl, 
-  RadioGroup, 
-  FormControlLabel, 
-  Radio, 
-  Checkbox, 
   Grid, 
   Card, 
   CardContent,
-  Switch
+  Chip,
+  Alert,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Badge
 } from '@mui/material';
 import { 
-  Add as AddIcon, 
-  Edit as EditIcon, 
+  Visibility as VisibilityIcon,
   Delete as DeleteIcon, 
-  Save as SaveIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon 
+  Cancel as CancelIcon,
+  Assessment as AssessmentIcon,
+  FilterList as FilterListIcon,
+  GetApp as GetAppIcon,
+  Flag as FlagIcon,
+  Warning as WarningIcon,
+  BarChart as BarChartIcon,
+  PieChart as PieChartIcon,
+  Report as ReportIcon
 } from '@mui/icons-material';
 
 // Données fictives pour les QCM
@@ -39,6 +44,13 @@ const mockQCMs = [
     id: 1,
     courseId: 1,
     title: "QCM: Variables et Types",
+    author: "Jean Dupont",
+    authorRole: "Professeur",
+    publié: true,
+    lastUpdated: "12/03/2025",
+    completions: 157,
+    averageScore: 82,
+    signalements: 0,
     questions: [
       {
         id: 1,
@@ -49,7 +61,8 @@ const mockQCMs = [
           { id: 3, text: "Number", isCorrect: true },
           { id: 4, text: "Integer", isCorrect: false }
         ],
-        type: "single"
+        type: "single",
+        accuracy: 78
       },
       {
         id: 2,
@@ -60,7 +73,8 @@ const mockQCMs = [
           { id: 3, text: "Utiliser des noms descriptifs", isCorrect: true },
           { id: 4, text: "Utiliser des caractères spéciaux comme @ ou #", isCorrect: false }
         ],
-        type: "multiple"
+        type: "multiple",
+        accuracy: 65
       }
     ]
   },
@@ -68,6 +82,13 @@ const mockQCMs = [
     id: 2,
     courseId: 2,
     title: "QCM: Structures Conditionnelles",
+    author: "Marie Martin",
+    authorRole: "Professeur",
+    publié: true,
+    lastUpdated: "28/03/2025",
+    completions: 124,
+    averageScore: 73,
+    signalements: 2,
     questions: [
       {
         id: 1,
@@ -78,18 +99,74 @@ const mockQCMs = [
           { id: 3, text: "if(1)", isCorrect: true },
           { id: 4, text: "if(null)", isCorrect: false }
         ],
-        type: "single"
+        type: "single",
+        accuracy: 81
+      }
+    ]
+  },
+  {
+    id: 3,
+    courseId: 3,
+    title: "QCM: Boucles et Itérations",
+    author: "Sophie Legrand",
+    authorRole: "Professeur",
+    publié: true,
+    lastUpdated: "01/04/2025",
+    completions: 98,
+    averageScore: 68,
+    signalements: 5,
+    questions: [
+      {
+        id: 1,
+        text: "Quelle boucle est la plus appropriée pour un nombre fixe d'itérations?",
+        options: [
+          { id: 1, text: "for", isCorrect: true },
+          { id: 2, text: "while", isCorrect: false },
+          { id: 3, text: "do-while", isCorrect: false },
+          { id: 4, text: "forEach", isCorrect: false }
+        ],
+        type: "single",
+        accuracy: 65
       }
     ]
   }
 ];
 
+// Données fictives pour les statistiques globales
+const globalStats = {
+  totalQCMs: 47,
+  totalCompletions: 4328,
+  averageScoreGlobal: 76,
+  totalQuestions: 218,
+  questionsPerQCM: 4.6,
+  mostActiveMonth: "Mars 2025",
+  mostActiveTeacher: "Jean Dupont",
+  weakestSubject: "Programmation orientée objet",
+  recentSignalements: [
+    { 
+      id: 1, 
+      qcmTitle: "QCM: Boucles et Itérations", 
+      studentName: "Thomas Bernard", 
+      date: "02/04/2025", 
+      reason: "Question ambiguë" 
+    },
+    { 
+      id: 2, 
+      qcmTitle: "QCM: Structures Conditionnelles", 
+      studentName: "Laura Michel", 
+      date: "30/03/2025", 
+      reason: "Réponse incorrecte" 
+    }
+  ]
+};
+
 const AdminQCM = () => {
   const [tabValue, setTabValue] = useState(0);
   const [qcms, setQCMs] = useState(mockQCMs);
   const [selectedQCM, setSelectedQCM] = useState(null);
-  const [editMode, setEditMode] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [sortBy, setSortBy] = useState('recent');
+  const [anchorElFilter, setAnchorElFilter] = useState(null);
   
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -97,129 +174,75 @@ const AdminQCM = () => {
   
   const handleSelectQCM = (qcm) => {
     setSelectedQCM(qcm);
-    setCurrentQuestion(null);
-    setEditMode(false);
-  };
-  
-  const handleEditQCM = () => {
-    setEditMode(true);
-  };
-  const handleAddOption = () => {
-    if (!currentQuestion || !editMode) return;
-    
-    // Trouver l'ID maximum actuel et ajouter 1 pour le nouvel ID
-    const maxId = Math.max(...currentQuestion.options.map(option => option.id), 0);
-    const newOption = {
-      id: maxId + 1,
-      text: '',
-      isCorrect: false
-    };
-    
-    // Créer une nouvelle question avec l'option ajoutée
-    const updatedQuestion = {
-      ...currentQuestion,
-      options: [...currentQuestion.options, newOption]
-    };
-    
-    // Mettre à jour la question actuelle
-    setCurrentQuestion(updatedQuestion);
-    
-    // Mettre à jour la question dans le QCM sélectionné
-    if (selectedQCM) {
-      const updatedQuestions = selectedQCM.questions.map(q => 
-        q.id === currentQuestion.id ? updatedQuestion : q
-      );
-      
-      setSelectedQCM({
-        ...selectedQCM,
-        questions: updatedQuestions
-      });
-    }
-  };
-  
-  
-  // 2. Fonction pour ajouter une nouvelle question
-  const handleAddQuestion = () => {
-    if (!selectedQCM || !editMode) return;
-    
-    // Trouver l'ID maximum actuel des questions et ajouter 1
-    const maxId = Math.max(...selectedQCM.questions.map(q => q.id), 0);
-     
-  // Créer une nouvelle option
-  const newOption = {
-    id: maxId + 1,
-    text: '',
-    isCorrect: false
-  };
-
-  console.log("Nouvelle option:", newOption);
-
-  // Mettre à jour la question avec la nouvelle option
-  const updatedQuestion = {
-    ...currentQuestion,
-    options: [...currentQuestion.options, newOption]
-  };
-    // Mise à jour de l'état de la question actuelle
-    setCurrentQuestion(updatedQuestion);
-    
-    // Créer une nouvelle question vide
-    const newQuestion = {
-      id: maxId + 1,
-      text: 'Nouvelle question',
-      type: 'single',
-      options: [
-        { id: 1, text: 'Option 1', isCorrect: true },
-        { id: 2, text: 'Option 2', isCorrect: false }
-      ]
-    };
-    
-    // Ajouter la question au QCM sélectionné
-    const updatedQCM = {
-      ...selectedQCM,
-      questions: [...selectedQCM.questions, newQuestion]
-    };
-    
-  
-    // Sélectionner la nouvelle question pour l'édition
-    setCurrentQuestion(newQuestion);
-    // Mise à jour du QCM sélectionné
-  if (selectedQCM) {
-    const updatedQuestions = selectedQCM.questions.map(q => 
-      q.id === currentQuestion.id ? updatedQuestion : q
-    );
-    
-    setSelectedQCM({
-      ...selectedQCM,
-      questions: updatedQuestions
-    });
-    
-    // Mise à jour de la liste des QCMs
-    setQCMs(qcms.map(q => 
-      q.id === selectedQCM.id ? { ...selectedQCM, questions: updatedQuestions } : q
-    ));
-  }
-
-    
-  };
-
-
-  const handleSaveQCM = () => {
-    if (selectedQCM) {
-      setQCMs(qcms.map(q => q.id === selectedQCM.id ? selectedQCM : q));
-    }
-    setEditMode(false);
+    setCurrentQuestion(qcm.questions[0] || null);
   };
   
   const handleSelectQuestion = (question) => {
     setCurrentQuestion(question);
   };
   
+  const handleDeleteQCM = (qcmId) => {
+    setQCMs(qcms.filter(q => q.id !== qcmId));
+    if (selectedQCM && selectedQCM.id === qcmId) {
+      setSelectedQCM(null);
+      setCurrentQuestion(null);
+    }
+  };
   
+  const handleOpenFilterMenu = (event) => {
+    setAnchorElFilter(event.currentTarget);
+  };
+  
+  const handleCloseFilterMenu = () => {
+    setAnchorElFilter(null);
+  };
+  
+  const handleSetSort = (sortType) => {
+    setSortBy(sortType);
+    handleCloseFilterMenu();
+  };
+  
+  const getSortedQCMs = () => {
+    switch(sortBy) {
+      case 'recent':
+        return [...qcms].sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+      case 'popularity':
+        return [...qcms].sort((a, b) => b.completions - a.completions);
+      case 'score':
+        return [...qcms].sort((a, b) => b.averageScore - a.averageScore);
+      case 'signalements':
+        return [...qcms].sort((a, b) => b.signalements - a.signalements);
+      default:
+        return qcms;
+    }
+  };
+  
+  // Fonction pour générer un rapport détaillé sur un QCM
+  const generateQCMReport = (qcm) => {
+    console.log(`Génération du rapport pour le QCM: ${qcm.title}`);
+    // Simulation d'une génération de rapport
+    alert(`Rapport pour "${qcm.title}" généré avec succès! Le rapport a été envoyé à votre email.`);
+  };
+
+  // Fonction pour exporter la liste des QCM
+  const exportQCMList = () => {
+    console.log("Exportation de la liste des QCM");
+    // Simulation d'un export
+    alert("Liste des QCM exportée avec succès! Le fichier a été téléchargé.");
+  };
+
+  // Fonction pour gérer les signalements
+  const handleManageReports = () => {
+    console.log("Ouverture de la gestion des signalements");
+    // Redirection vers une page dédiée
+    alert("Redirection vers la page de gestion des signalements...");
+  };
+
   return (
     <Box sx={{ py: 4, bgcolor: '#f5f7fb', minHeight: '100vh' }}>
       <Container maxWidth="xl">
         <Typography variant="h4" component="h1" sx={{ mb: 4, fontWeight: 'bold' }}>
-          Gestion des QCM
+          Surveillance des QCM
         </Typography>
         
         <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -236,44 +259,111 @@ const AdminQCM = () => {
             }}
           >
             <Tab label="Liste des QCM" />
-            <Tab label="Création / Édition" />
-            <Tab label="Statistiques" />
+            <Tab label="Analyse détaillée" />
+            <Tab label="Statistiques globales" />
           </Tabs>
           
           <Box sx={{ p: 0 }}>
             {/* Onglet Liste des QCM */}
             {tabValue === 0 && (
               <Box sx={{ p: 3 }}>
-                <Button 
-                  variant="contained" 
-                  startIcon={<AddIcon />}
-                  sx={{ 
-                    mb: 3,
-                    bgcolor: '#ff9900', 
-                    '&:hover': { bgcolor: '#e68a00' } 
-                  }}
-                >
-                  Nouveau QCM
-                </Button>
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" component="h2">
+                    Tous les QCM ({qcms.length})
+                  </Typography>
+                  
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      startIcon={<FilterListIcon />}
+                      onClick={handleOpenFilterMenu}
+                      sx={{ mr: 2 }}
+                    >
+                      Trier: {sortBy === 'recent' ? 'Récents' : 
+                             sortBy === 'popularity' ? 'Popularité' : 
+                             sortBy === 'score' ? 'Score' : 'Signalements'}
+                    </Button>
+                    <Menu
+                      anchorEl={anchorElFilter}
+                      open={Boolean(anchorElFilter)}
+                      onClose={handleCloseFilterMenu}
+                    >
+                      <MenuItem onClick={() => handleSetSort('recent')}>Récents</MenuItem>
+                      <MenuItem onClick={() => handleSetSort('popularity')}>Popularité</MenuItem>
+                      <MenuItem onClick={() => handleSetSort('score')}>Score</MenuItem>
+                      <MenuItem onClick={() => handleSetSort('signalements')}>Signalements</MenuItem>
+                    </Menu>
+                    
+                    <Button 
+                      variant="contained" 
+                      startIcon={<GetAppIcon />}
+                      onClick={exportQCMList}
+                      sx={{ 
+                        bgcolor: '#4caf50', 
+                        '&:hover': { bgcolor: '#388e3c' } 
+                      }}
+                    >
+                      Exporter
+                    </Button>
+                  </Box>
+                </Box>
                 
                 <List>
-                  {qcms.map((qcm) => (
+                  {getSortedQCMs().map((qcm) => (
                     <React.Fragment key={qcm.id}>
                       <ListItem 
                         button 
                         onClick={() => handleSelectQCM(qcm)}
                         selected={selectedQCM && selectedQCM.id === qcm.id}
+                        sx={{ 
+                          borderRadius: 1,
+                          bgcolor: qcm.signalements > 3 ? 'rgba(244, 67, 54, 0.08)' : 'transparent'
+                        }}
                       >
                         <ListItemText 
-                          primary={qcm.title} 
-                          secondary={`${qcm.questions.length} questions`} 
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              {qcm.title}
+                              {qcm.signalements > 3 && (
+                                <Tooltip title={`${qcm.signalements} signalements`}>
+                                  <Chip 
+                                    icon={<FlagIcon />} 
+                                    label={qcm.signalements} 
+                                    color="error" 
+                                    size="small" 
+                                    sx={{ ml: 1 }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </Box>
+                          } 
+                          secondary={`Auteur: ${qcm.author} • Modifié le: ${qcm.lastUpdated} • ${qcm.questions.length} questions • Score moyen: ${qcm.averageScore}%`} 
                         />
-                        <IconButton color="primary" edge="end">
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton color="error" edge="end" sx={{ ml: 1 }}>
-                          <DeleteIcon />
-                        </IconButton>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                          <Tooltip title="Nombre de complétions">
+                            <Chip 
+                              label={`${qcm.completions} complétions`} 
+                              color="primary" 
+                              variant="outlined" 
+                              size="small" 
+                              sx={{ mr: 2 }}
+                            />
+                          </Tooltip>
+                          <IconButton color="primary" sx={{ mr: 1 }}>
+                            <VisibilityIcon />
+                          </IconButton>
+                          <Tooltip title="Supprimer ce QCM">
+                            <IconButton 
+                              color="error" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteQCM(qcm.id);
+                              }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </ListItem>
                       <Divider component="li" />
                     </React.Fragment>
@@ -282,61 +372,88 @@ const AdminQCM = () => {
               </Box>
             )}
             
-            {/* Onglet Création / Édition */}
+            {/* Onglet Analyse détaillée */}
             {tabValue === 1 && (
               <Box sx={{ p: 3 }}>
                 {selectedQCM ? (
                   <>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                      {editMode ? (
-                        <TextField 
-                          value={selectedQCM.title} 
-                          onChange={(e) => setSelectedQCM({...selectedQCM, title: e.target.value})}
-                          variant="outlined"
-                          fullWidth
-                          sx={{ maxWidth: 500 }}
-                        />
-                      ) : (
+                      <Box>
                         <Typography variant="h5" component="h2">
                           {selectedQCM.title}
                         </Typography>
-                      )}
+                        <Typography variant="body2" color="text.secondary">
+                          Auteur: {selectedQCM.author} • Dernière mise à jour: {selectedQCM.lastUpdated}
+                        </Typography>
+                      </Box>
                       
-                      {editMode ? (
+                      <Box>
                         <Button 
-                          variant="contained" 
-                          color="primary" 
-                          startIcon={<SaveIcon />}
-                          onClick={handleSaveQCM}
-                          sx={{ 
-                            bgcolor: '#4caf50', 
-                            '&:hover': { bgcolor: '#388e3c' } 
-                          }}
+                          variant="outlined"
+                          startIcon={<AssessmentIcon />}
+                          sx={{ mr: 1 }}
+                          onClick={() => generateQCMReport(selectedQCM)}
                         >
-                          Enregistrer
+                          Rapport détaillé
                         </Button>
-                      ) : (
-                        <Button 
-                          variant="contained" 
-                          startIcon={<EditIcon />}
-                          onClick={handleEditQCM}
-                          sx={{ 
-                            bgcolor: '#ff9900', 
-                            '&:hover': { bgcolor: '#e68a00' } 
-                          }}
-                        >
-                          Modifier
-                        </Button>
-                      )}
+                        {selectedQCM.signalements > 0 && (
+                          <Chip 
+                            icon={<FlagIcon />} 
+                            label={`${selectedQCM.signalements} signalements`} 
+                            color="error" 
+                            sx={{ mr: 2 }}
+                          />
+                        )}
+                      </Box>
                     </Box>
+                    
+                    {selectedQCM.signalements > 3 && (
+                      <Alert severity="warning" sx={{ mb: 3 }}>
+                        Ce QCM a reçu plusieurs signalements de la part des étudiants. Nous vous recommandons de l'examiner en détail.
+                      </Alert>
+                    )}
                     
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={4}>
                         <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
-                          Questions
+                          Statistiques du QCM
                         </Typography>
                         <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
-                          <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+                          <Card variant="outlined" sx={{ mb: 2 }}>
+                            <CardContent>
+                              <Typography variant="subtitle2" color="text.secondary">
+                                Complétions
+                              </Typography>
+                              <Typography variant="h4">
+                                {selectedQCM.completions}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                          <Card variant="outlined" sx={{ mb: 2 }}>
+                            <CardContent>
+                              <Typography variant="subtitle2" color="text.secondary">
+                                Score moyen
+                              </Typography>
+                              <Typography variant="h4">
+                                {selectedQCM.averageScore}%
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                          <Card variant="outlined">
+                            <CardContent>
+                              <Typography variant="subtitle2" color="text.secondary">
+                                Taux de difficulté
+                              </Typography>
+                              <Typography variant="h4">
+                                {selectedQCM.averageScore < 60 ? 'Élevé' : selectedQCM.averageScore < 80 ? 'Moyen' : 'Faible'}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                          
+                          <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>
+                            Questions ({selectedQCM.questions.length})
+                          </Typography>
+                          <List sx={{ maxHeight: 250, overflow: 'auto' }}>
                             {selectedQCM.questions.map((question) => (
                               <React.Fragment key={question.id}>
                                 <ListItem 
@@ -346,24 +463,13 @@ const AdminQCM = () => {
                                 >
                                   <ListItemText 
                                     primary={question.text.length > 30 ? `${question.text.substring(0, 30)}...` : question.text} 
-                                    secondary={`Type: ${question.type === 'single' ? 'Choix unique' : 'Choix multiple'}`} 
+                                    secondary={`Taux de réussite: ${question.accuracy}%`} 
                                   />
                                 </ListItem>
                                 <Divider component="li" />
                               </React.Fragment>
                             ))}
                           </List>
-                          {editMode && (
-                          <Button 
-                             fullWidth 
-                               variant="outlined" 
-                                 startIcon={<AddIcon />}
-                                   sx={{ mt: 2 }}
-                                    onClick={handleAddQuestion}
-                                      >
-                                       Ajouter une question
-                              </Button>
-                            )}
                         </Paper>
                       </Grid>
                       
@@ -371,148 +477,57 @@ const AdminQCM = () => {
                         {currentQuestion ? (
                           <Box>
                             <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
-                              Détails de la question
+                              Analyse de la question
                             </Typography>
                             <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-                              {editMode ? (
-                                <Box>
-                                  <TextField
-                                    label="Question"
-                                    value={currentQuestion.text}
-                                    onChange={(e) => {
-                                      const updatedQuestion = {...currentQuestion, text: e.target.value};
-                                      setCurrentQuestion(updatedQuestion);
-                                      const updatedQuestions = selectedQCM.questions.map(q => 
-                                        q.id === currentQuestion.id ? updatedQuestion : q
-                                      );
-                                      setSelectedQCM({...selectedQCM, questions: updatedQuestions});
-                                    }}
-                                    fullWidth
-                                    multiline
-                                    rows={2}
-                                    sx={{ mb: 3 }}
-                                  />
-                                  
-                                  <FormControl component="fieldset" sx={{ mb: 2 }}>
-                                    <Typography variant="subtitle1" component="div" sx={{ mb: 1 }}>
-                                      Type de question:
-                                    </Typography>
-                                    <RadioGroup
-                                      row
-                                      value={currentQuestion.type}
-                                      onChange={(e) => {
-                                        const updatedQuestion = {...currentQuestion, type: e.target.value};
-                                        setCurrentQuestion(updatedQuestion);
-                                        const updatedQuestions = selectedQCM.questions.map(q => 
-                                          q.id === currentQuestion.id ? updatedQuestion : q
-                                        );
-                                        setSelectedQCM({...selectedQCM, questions: updatedQuestions});
-                                      }}
-                                    >
-                                      <FormControlLabel value="single" control={<Radio />} label="Choix unique" />
-                                      <FormControlLabel value="multiple" control={<Radio />} label="Choix multiple" />
-                                    </RadioGroup>
-                                  </FormControl>
-                                  
-                                  <Typography variant="subtitle1" component="div" sx={{ mb: 1 }}>
-                                    Options:
-                                  </Typography>
-                                  {currentQuestion.options.map((option, index) => (
-                                    <Box key={option.id} sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                                      <TextField
-                                        value={option.text}
-                                        onChange={(e) => {
-                                          const updatedOptions = [...currentQuestion.options];
-                                          updatedOptions[index] = {...option, text: e.target.value};
-                                          const updatedQuestion = {...currentQuestion, options: updatedOptions};
-                                          setCurrentQuestion(updatedQuestion);
-                                          const updatedQuestions = selectedQCM.questions.map(q => 
-                                            q.id === currentQuestion.id ? updatedQuestion : q
-                                          );
-                                          setSelectedQCM({...selectedQCM, questions: updatedQuestions});
-                                        }}
-                                        fullWidth
-                                        sx={{ mr: 2 }}
-                                      />
-                                      {currentQuestion.type === 'single' ? (
-                                        <Radio
-                                          checked={option.isCorrect}
-                                          onChange={(e) => {
-                                            const updatedOptions = currentQuestion.options.map(o => 
-                                              ({...o, isCorrect: o.id === option.id})
-                                            );
-                                            const updatedQuestion = {...currentQuestion, options: updatedOptions};
-                                            setCurrentQuestion(updatedQuestion);
-                                            const updatedQuestions = selectedQCM.questions.map(q => 
-                                              q.id === currentQuestion.id ? updatedQuestion : q
-                                            );
-                                            setSelectedQCM({...selectedQCM, questions: updatedQuestions});
-                                          }}
-                                        />
+                              <Box>
+                                <Typography variant="h6" gutterBottom>
+                                  {currentQuestion.text}
+                                </Typography>
+                                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                  Type: {currentQuestion.type === 'single' ? 'Choix unique' : 'Choix multiple'} • Taux de réussite: {currentQuestion.accuracy}%
+                                </Typography>
+                                <Divider sx={{ my: 2 }} />
+                                <List>
+                                  {currentQuestion.options.map((option) => (
+                                    <ListItem key={option.id}>
+                                      {option.isCorrect ? (
+                                        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
                                       ) : (
-                                        <Checkbox
-                                          checked={option.isCorrect}
-                                          onChange={(e) => {
-                                            const updatedOptions = [...currentQuestion.options];
-                                            updatedOptions[index] = {...option, isCorrect: e.target.checked};
-                                            const updatedQuestion = {...currentQuestion, options: updatedOptions};
-                                            setCurrentQuestion(updatedQuestion);
-                                            const updatedQuestions = selectedQCM.questions.map(q => 
-                                              q.id === currentQuestion.id ? updatedQuestion : q
-                                            );
-                                            setSelectedQCM({...selectedQCM, questions: updatedQuestions});
-                                          }}
-                                        />
+                                        <CancelIcon color="error" sx={{ mr: 1 }} />
                                       )}
-                                      <IconButton color="error">
-                                        <DeleteIcon />
-                                      </IconButton>
-                                    </Box>
+                                      <ListItemText 
+                                        primary={option.text} 
+                                        secondary={`${Math.floor(Math.random() * 45 + 5)}% des étudiants ont choisi cette option`} 
+                                      />
+                                    </ListItem>
                                   ))}
-
-                                  <Button 
-                                     variant="outlined" 
-                                     startIcon={<AddIcon />}
-                                     sx={{ mt: 1 }}
-                                     onClick={() => {
-                                      console.log("Bouton Ajouter une option cliqué");
-                                     console.log("currentQuestion:", currentQuestion);
-                                     console.log("editMode:", editMode);
-                                     handleAddOption();
-                                    }}
-                                    >
-                                   Ajouter une option
-                                  </Button>
-                                </Box>
-                              ) : (
-                                <Box>
-                                  <Typography variant="h6" gutterBottom>
-                                    {currentQuestion.text}
+                                </List>
+                                
+                                <Box sx={{ mt: 3 }}>
+                                  <Typography variant="subtitle1" gutterBottom>
+                                    Analyse de performance
                                   </Typography>
-                                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                    Type: {currentQuestion.type === 'single' ? 'Choix unique' : 'Choix multiple'}
-                                  </Typography>
-                                  <Divider sx={{ my: 2 }} />
-                                  <List>
-                                    {currentQuestion.options.map((option) => (
-                                      <ListItem key={option.id}>
-                                        {option.isCorrect ? (
-                                          <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-                                        ) : (
-                                          <CancelIcon color="error" sx={{ mr: 1 }} />
-                                        )}
-                                        <ListItemText primary={option.text} />
-                                      </ListItem>
-                                    ))}
-                                  </List>
+                                  <Card variant="outlined" sx={{ mb: 2, p: 1 }}>
+                                    <CardContent>
+                                      <Typography variant="body2">
+                                        {currentQuestion.accuracy < 50 
+                                          ? "Cette question semble trop difficile. Envisagez de contacter l'auteur pour une clarification." 
+                                          : currentQuestion.accuracy > 90 
+                                          ? "Cette question est très facile. Elle pourrait ne pas être suffisamment discriminante."
+                                          : "Cette question a un bon niveau de difficulté équilibré."
+                                        }
+                                      </Typography>
+                                    </CardContent>
+                                  </Card>
                                 </Box>
-                              )}
+                              </Box>
                             </Paper>
                           </Box>
                         ) : (
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                             <Typography variant="subtitle1" color="text.secondary">
-                              Sélectionnez une question pour voir les détails
+                              Sélectionnez une question pour voir son analyse détaillée
                             </Typography>
                           </Box>
                         )}
@@ -522,48 +537,254 @@ const AdminQCM = () => {
                 ) : (
                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
                     <Typography variant="subtitle1" color="text.secondary">
-                      Sélectionnez un QCM dans l'onglet "Liste des QCM" pour commencer l'édition
+                      Sélectionnez un QCM dans l'onglet "Liste des QCM" pour voir son analyse détaillée
                     </Typography>
                   </Box>
                 )}
               </Box>
             )}
             
-            {/* Onglet Statistiques */}
+            {/* Onglet Statistiques globales */}
             {tabValue === 2 && (
               <Box sx={{ p: 3 }}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" component="h3">
+                        Tableau de bord global
+                      </Typography>
+                      <Button 
+                        variant="contained" 
+                        startIcon={<GetAppIcon />}
+                        onClick={exportQCMList}
+                        sx={{ 
+                          bgcolor: '#4caf50', 
+                          '&:hover': { bgcolor: '#388e3c' } 
+                        }}
+                      >
+                        Exporter les statistiques
+                      </Button>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={3}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          QCM Total
+                        </Typography>
+                        <Typography variant="h4" sx={{ mt: 1, mb: 1 }}>
+                          {globalStats.totalQCMs}
+                        </Typography>
+                        <Chip 
+                          label="+8 ce mois" 
+                          color="success" 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={3}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Complétions totales
+                        </Typography>
+                        <Typography variant="h4" sx={{ mt: 1, mb: 1 }}>
+                          {globalStats.totalCompletions}
+                        </Typography>
+                        <Chip 
+                          label="+432 ce mois" 
+                          color="success" 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={3}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Score moyen global
+                        </Typography>
+                        <Typography variant="h4" sx={{ mt: 1, mb: 1 }}>
+                          {globalStats.averageScoreGlobal}%
+                        </Typography>
+                        <Chip 
+                          label="+2% vs trimestre précédent" 
+                          color="primary" 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={3}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Signalements actifs
+                        </Typography>
+                        <Typography variant="h4" sx={{ mt: 1, mb: 1 }}>
+                          {globalStats.recentSignalements.length}
+                        </Typography>
+                        <Chip 
+                          label="Requiert votre attention" 
+                          color="warning" 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={8}>
                     <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
                       <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
-                        Performance des QCM
+                        Tendances et performance
                       </Typography>
-                      <Box sx={{ height: 300 }}>
-                        {/* Ici tu pourrais ajouter un graphique avec Chart.js ou Recharts */}
-                        <Typography variant="body1">
-                          Graphique de performance (à implémenter)
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                          <Card variant="outlined">
+                            <CardContent>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                <BarChartIcon sx={{ color: 'primary.main', mr: 1 }} />
+                                <Typography variant="subtitle1">
+                                  Activité par mois
+                                </Typography>
+                              </Box>
+                              <Box sx={{ height: 150, bgcolor: '#f5f5f5', borderRadius: 1, p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Graphique: activité mensuelle
+                                </Typography>
+                              </Box>
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="body2">
+                                  Mois le plus actif: <strong>{globalStats.mostActiveMonth}</strong>
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Card variant="outlined">
+                            <CardContent>
+                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                <PieChartIcon sx={{ color: 'primary.main', mr: 1 }} />
+                                <Typography variant="subtitle1">
+                                  Distribution par matière
+                                </Typography>
+                              </Box>
+                              <Box sx={{ height: 150, bgcolor: '#f5f5f5', borderRadius: 1, p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Graphique: distribution par matière
+                                </Typography>
+                              </Box>
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="body2">
+                                  Sujet avec le score le plus bas: <strong>{globalStats.weakestSubject}</strong>
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      </Grid>
+                      
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                          Insights clés
                         </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={4}>
+                            <Card variant="outlined">
+                              <CardContent>
+                                <Typography variant="body2">
+                                  <strong>Professeur le plus actif:</strong> {globalStats.mostActiveTeacher}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <Card variant="outlined">
+                              <CardContent>
+                                <Typography variant="body2">
+                                  <strong>Questions par QCM:</strong> {globalStats.questionsPerQCM} en moyenne
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <Card variant="outlined">
+                              <CardContent>
+                                <Typography variant="body2">
+                                  <strong>Total de questions:</strong> {globalStats.totalQuestions}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        </Grid>
                       </Box>
                     </Paper>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  
+                  <Grid item xs={12} md={4}>
                     <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-                      <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
-                        Questions fréquemment manquées
+                      <Typography variant="h6" component="h3" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <FlagIcon color="error" sx={{ mr: 1 }} />
+                        Signalements récents
                       </Typography>
-                      <List>
-                        {[1, 2, 3].map((item) => (
-                          <React.Fragment key={item}>
-                            <ListItem>
-                              <ListItemText 
-                                primary={`Question ${item}: Comment stocker des données persistantes dans le navigateur?`} 
-                                secondary={`Taux d'erreur: ${70 - item * 15}%`} 
-                              />
-                            </ListItem>
-                            <Divider component="li" />
-                          </React.Fragment>
-                        ))}
-                      </List>
+                      {globalStats.recentSignalements.length > 0 ? (
+                        <List>
+                          {globalStats.recentSignalements.map((signalement) => (
+                            <React.Fragment key={signalement.id}>
+                              <ListItem>
+                                <ListItemText 
+                                  primary={signalement.qcmTitle} 
+                                  secondary={
+                                    <Box>
+                                      <Typography variant="body2" component="span">
+                                        Signalé par: {signalement.studentName}
+                                      </Typography>
+                                      <br />
+                                      <Typography variant="body2" component="span">
+                                        Date: {signalement.date} • Raison: {signalement.reason}
+                                      </Typography>
+                                    </Box>
+                                  } 
+                                />
+                                <Tooltip title="Voir les détails">
+                                  <IconButton size="small" color="primary">
+                                    <VisibilityIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </ListItem>
+                              <Divider component="li" />
+                            </React.Fragment>
+                          ))}
+                        </List>
+                      ) : (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Aucun signalement récent
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      <Button 
+                        variant="outlined" 
+                        color="error"
+                        startIcon={<ReportIcon />}
+                        fullWidth
+                        onClick={handleManageReports}
+                        sx={{ mt: 2 }}
+                      >
+                        Gérer tous les signalements
+                      </Button>
                     </Paper>
                   </Grid>
                 </Grid>
@@ -574,6 +795,25 @@ const AdminQCM = () => {
       </Container>
     </Box>
   );
+};
+
+// Fonction utilitaire pour générer des pourcentages aléatoires pour l'affichage des graphiques (simulation)
+const generateRandomPercentages = (count) => {
+  const percentages = [];
+  let remaining = 100;
+  
+  for (let i = 0; i < count - 1; i++) {
+    // Générer un pourcentage aléatoire en fonction du reste disponible
+    const max = Math.floor(remaining * 0.8); // Ne pas prendre plus de 80% du reste
+    const percentage = Math.floor(Math.random() * max) + 1;
+    percentages.push(percentage);
+    remaining -= percentage;
+  }
+  
+  // Ajouter le reste au dernier élément
+  percentages.push(remaining);
+  
+  return percentages;
 };
 
 export default AdminQCM;

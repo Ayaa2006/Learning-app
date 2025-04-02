@@ -317,17 +317,6 @@ const TeacherLayout = ({ children, toggleDarkMode, darkMode }) => {
               <ListItemText primary="Mes examens" />
             </ListItemButton>
             
-            <ListItemButton 
-              component={Link} 
-              to="/admin-exams/proctoring"
-              selected={isActive('/teacher-exams/proctoring')}
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <VisibilityIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Surveillance" />
-            </ListItemButton>
             
             <ListItemButton 
               component={Link} 
@@ -343,34 +332,7 @@ const TeacherLayout = ({ children, toggleDarkMode, darkMode }) => {
           </List>
         </Collapse>
         
-        {/* Étudiants */}
-        <ListItem disablePadding>
-          <ListItemButton 
-            component={Link} 
-            to="/teacher-students"
-            selected={isActive('/teacher-students')}
-          >
-            <ListItemIcon>
-              <PeopleIcon color={isActive('/teacher-students') ? 'primary' : 'inherit'} />
-            </ListItemIcon>
-            <ListItemText primary="Mes étudiants" />
-          </ListItemButton>
-        </ListItem>
-
-        {/* Certificats */}
-        <ListItem disablePadding>
-          <ListItemButton 
-            component={Link} 
-            to="/admin-certificates"
-            selected={isActive('/admin-certificates')}
-          >
-            <ListItemIcon>
-              <CertificateIcon color={isActive('/admin-certificates') ? 'primary' : 'inherit'} />
-            </ListItemIcon>
-            <ListItemText primary="Certificats" />
-          </ListItemButton>
-        </ListItem>
-
+       
       
       </List>
     </Box>
