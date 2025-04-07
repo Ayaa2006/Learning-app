@@ -614,12 +614,7 @@ const AdminLayout = ({ children, toggleDarkMode, darkMode }) => {
             }}>
               Mon profil
             </MenuItem>
-            <MenuItem onClick={() => {
-              handleUserMenuClose();
-              navigate('/admin/settings');
-            }}>
-              Paramètres
-            </MenuItem>
+            
             <Divider />
             <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
               <LogoutIcon fontSize="small" sx={{ mr: 1 }} />

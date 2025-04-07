@@ -41,7 +41,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/common/Logo';
 
 // URL de base de l'API - à ajuster selon ton environnement
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const Login = () => {
   // État pour le mode sombre/clair
@@ -149,7 +149,7 @@ const handleStudentLogin = async (e) => {
     setError('');
     
     // Appel à l'API de connexion étudiant
-    const response = await axios.post(`${API_URL}/auth/login/student`, {
+    const response = await axios.post(`${API_URL}/api/auth/login/student`, {
       email: studentEmail,
       birthDate: birthDate
     });
@@ -211,7 +211,7 @@ const handleAdminLogin = async (e) => {
     setError('');
     
     // Appel à l'API de connexion staff
-    const response = await axios.post(`${API_URL}/auth/login/staff`, {
+    const response = await axios.post(`${API_URL}/api/auth/login/staff`, {
       email: adminEmail,
       password: adminPassword,
       role: adminRole
@@ -251,7 +251,7 @@ const handleAdminLogin = async (e) => {
         }, 1500);
       } else {
         setError('Échec de la connexion. Veuillez réessayer.');
-      }
+      } 
     } else {
       setError(response.data.message || 'Échec de la connexion. Veuillez réessayer.');
     }
@@ -338,11 +338,10 @@ const handleAdminLogin = async (e) => {
             )}
             
             {loginSuccess && (
-              <Alert severity="success" sx={{ mb: 2 }}>
-                Connexion réussie ! Redirection en cours...
-              </Alert>
-            )}
-            
+  <Alert severity="success" sx={{ mb: 2 }}>
+    Connexion réussie ! Redirection en cours...
+  </Alert>
+)}
             <Box sx={{ mt: 4, width: '100%' }}>
               <Typography 
                 variant="h2" 

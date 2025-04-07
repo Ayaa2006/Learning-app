@@ -39,8 +39,10 @@ import {
 } from '@mui/icons-material';
 import AdminLayout from '../components/layouts/AdminLayout';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+
 import { adminService } from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+
 
 const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
   const { user, hasPermission, ROLES, logout } = useAuth();
@@ -177,14 +179,14 @@ const AdminDashboard = ({ toggleDarkMode, darkMode }) => {
                 <Grid item xs={12} md={4}>
                   {/* Carte Profil et Déconnexion */}
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                      <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-                        Mon Profil
-                      </Typography>
-                      <IconButton size="small">
-                        <SettingsIcon />
-                      </IconButton>
-                    </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+      Mon Profil
+    </Typography>
+    <IconButton size="small" component={Link} to="/admin/profile">
+      <SettingsIcon />
+    </IconButton>
+  </Box>
                     
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
                       <Avatar 

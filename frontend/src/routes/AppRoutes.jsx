@@ -28,11 +28,13 @@ import AdminUserManagement from '../pages/AdminUserManagement';
 import AdminSettings from '../pages/AdminSettings';
 import AdminAnalytics from '../pages/AdminAnalytics';
 
+
 const AppRoutes = () => {
   const { ROLES } = useAuth();
   
   return (
     <Routes>
+      <Route path="/admin/users" element={<UsersManagement />} />
       {/* Routes publiques */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

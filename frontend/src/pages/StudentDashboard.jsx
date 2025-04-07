@@ -1,5 +1,7 @@
 // src/pages/StudentDashboard.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { CircularProgress } from '@mui/material';
 
 import { 
   Box, 
@@ -60,74 +62,6 @@ import {
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 
-// Données fictives pour le tableau de bord étudiant
-const studentData = {
-  name: "Jane Doe",
-  email: "jane.doe@example.com",
-  phone: "+33 6 12 34 56 78",
-  avatar: "/images/avatar.jpg",
-  language: "Français",
-  role: "Étudiant",
-  memberSince: "Janvier 2025",
-  lastLogin: "20 mars 2025, 09:45",
-  currentModule: {
-    id: 3,
-    title: "Structures Conditionnelles",
-    progress: 40,
-    nextLesson: "Switch et structures avancées"
-  },
-  stats: {
-    completedCourses: 12,
-    completedQuizzes: 8,
-    totalPoints: 1250,
-    hoursSpent: 28,
-    consecutiveDays: 5
-  },
-  upcomingEvents: [
-    { id: 1, title: "Examen Final: Structures Conditionnelles", date: "2025-03-25", type: "exam" },
-    { id: 2, title: "Session de support: Boucles et Itérations", date: "2025-03-22", type: "support" }
-  ],
-  recentActivities: [
-    { id: 1, title: "Cours: If/Else et opérateurs logiques", date: "2025-03-18", type: "course" },
-    { id: 2, title: "Quiz: If/Else", date: "2025-03-18", type: "quiz", score: 92 },
-    { id: 3, title: "Examen: Variables et Types", date: "2025-03-15", type: "exam", score: 88 }
-  ],
-  recommendations: [
-    { id: 1, title: "Structures de contrôle avancées", type: "course" },
-    { id: 2, title: "Challenge: Logique conditionnelle", type: "challenge" },
-    { id: 3, title: "Exercices pratiques sur les conditions", type: "practice" }
-  ],
-  achievements: [
-    { id: 1, title: "Première semaine complète", description: "Connecté 7 jours consécutifs", icon: "streak" },
-    { id: 2, title: "Quiz parfait", description: "Obtenu 100% sur un quiz", icon: "quiz" },
-    { id: 3, title: "Premier module", description: "Complété votre premier module", icon: "module" }
-  ],
-  preferences: {
-    emailNotifications: true,
-    darkMode: false,
-    showProgress: true,
-    showAchievements: true,
-    twoFactorAuth: false
-  },
-  notifications: [
-    { id: 1, content: "Nouveau cours disponible: Structures avancées", date: "2025-03-18", read: false },
-    { id: 2, content: "Votre certificat est prêt à être téléchargé", date: "2025-03-15", read: true }
-  ],
-  certificates: [
-    { id: 1, title: "Introduction à la Programmation", issueDate: "2025-02-15" },
-    { id: 2, title: "Variables et Types de Données", issueDate: "2025-03-08" }
-  ],
-  courses: {
-    completed: [
-      { id: 1, title: "Introduction à la Programmation", date: "2025-02-15" },
-      { id: 2, title: "Variables et Types de Données", date: "2025-03-08" }
-    ],
-    inProgress: [
-      { id: 3, title: "Structures Conditionnelles", progress: 40 }
-    ]
-  }
-};
-
 // Pages principales pour la navigation
 const pages = [
   { name: 'Mes cours', icon: <BookIcon />, path: '/courses' },
@@ -136,21 +70,178 @@ const pages = [
 ];
 
 const StudentDashboard = () => {
+  // Déclarations d'état
+  const [studentData, setStudentData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    avatar: "/images/avatar.jpg",
+    language: "Français",
+    role: "Étudiant",
+    memberSince: "",
+    lastLogin: "",
+    currentModule: {
+      id: 3,
+      title: "Structures Conditionnelles",
+      progress: 40,
+      nextLesson: "Switch et structures avancées"
+    },
+    stats: {
+      completedCourses: 12,
+      completedQuizzes: 8,
+      totalPoints: 1250,
+      hoursSpent: 28,
+      consecutiveDays: 5
+    },
+    upcomingEvents: [],
+    recentActivities: [],
+    recommendations: [],
+    achievements: [],
+    preferences: {
+      emailNotifications: true,
+      darkMode: false,
+      showProgress: true,
+      showAchievements: true,
+      twoFactorAuth: false
+    },
+    notifications: [],
+    certificates: [],
+    courses: {
+      completed: [],
+      inProgress: []
+    }
+  });
+  const [loading, setLoading] = useState(true);
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [selectedView, setSelectedView] = useState('dashboard');
   const [tabValue, setTabValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [userInfo, setUserInfo] = useState({
-    name: studentData.name,
-    email: studentData.email,
-    phone: studentData.phone,
-    language: studentData.language
+    name: "",
+    email: "",
+    phone: "",
+    language: ""
   });
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+
+  // Effet pour charger les données du profil
+  useEffect(() => {
+  const fetchUserProfile = async () => {
+    try {
+      // S'assurer que le token est ajouté aux en-têtes
+      const token = localStorage.getItem('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log("Récupération du profil...");
+      const response = await axios.get('/api/users/profile');
+      console.log("Données reçues:", response.data);
+      
+      if (response.data) {
+        // Adapter les données reçues au format attendu
+        const userData = {
+          name: response.data.name || "",
+          email: response.data.email || "",
+          phone: response.data.phone || "+33 6 12 34 56 78",
+          avatar: "/images/avatar.jpg",
+          language: response.data.language || "Français",
+          role: response.data.role || "STUDENT",
+          memberSince: response.data.createdAt ? new Date(response.data.createdAt).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : "",
+          lastLogin: response.data.lastLogin ? new Date(response.data.lastLogin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Jamais",
+          currentModule: {
+            id: 3,
+            title: "Structures Conditionnelles",
+            progress: response.data.progress || 40,
+            nextLesson: "Switch et structures avancées"
+          },
+          stats: {
+            completedCourses: response.data.coursesCompleted || 12,
+            completedQuizzes: 8,
+            totalPoints: response.data.totalPoints || 1250,
+            hoursSpent: 28,
+            consecutiveDays: 5
+          },
+          // Conserver les autres données par défaut
+          upcomingEvents: [
+            { id: 1, title: "Examen Final: Structures Conditionnelles", date: "2025-03-25", type: "exam" },
+            { id: 2, title: "Session de support: Boucles et Itérations", date: "2025-03-22", type: "support" }
+          ],
+          recentActivities: [
+            { id: 1, title: "Cours: If/Else et opérateurs logiques", date: "2025-03-18", type: "course" },
+            { id: 2, title: "Quiz: If/Else", date: "2025-03-18", type: "quiz", score: 92 },
+            { id: 3, title: "Examen: Variables et Types", date: "2025-03-15", type: "exam", score: 88 }
+          ],
+          recommendations: [
+            { id: 1, title: "Structures de contrôle avancées", type: "course" },
+            { id: 2, title: "Challenge: Logique conditionnelle", type: "challenge" },
+            { id: 3, title: "Exercices pratiques sur les conditions", type: "practice" }
+          ],
+          achievements: [
+            { id: 1, title: "Première semaine complète", description: "Connecté 7 jours consécutifs", icon: "streak" },
+            { id: 2, title: "Quiz parfait", description: "Obtenu 100% sur un quiz", icon: "quiz" },
+            { id: 3, title: "Premier module", description: "Complété votre premier module", icon: "module" }
+          ],
+          preferences: {
+            emailNotifications: true,
+            darkMode: false,
+            showProgress: true,
+            showAchievements: true,
+            twoFactorAuth: false
+          },
+          notifications: [
+            { id: 1, content: "Nouveau cours disponible: Structures avancées", date: "2025-03-18", read: false },
+            { id: 2, content: "Votre certificat est prêt à être téléchargé", date: "2025-03-15", read: true }
+          ],
+          certificates: [
+            { id: 1, title: "Introduction à la Programmation", issueDate: "2025-02-15" },
+            { id: 2, title: "Variables et Types de Données", issueDate: "2025-03-08" }
+          ],
+          courses: {
+            completed: [
+              { id: 1, title: "Introduction à la Programmation", date: "2025-02-15" },
+              { id: 2, title: "Variables et Types de Données", date: "2025-03-08" }
+            ],
+            inProgress: [
+              { id: 3, title: "Structures Conditionnelles", progress: 40 }
+            ]
+          }
+        };
+        
+       
+        setStudentData(userData);
+        
+        // Mettre à jour userInfo
+        setUserInfo({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          language: userData.language
+        });
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du profil:', error);
+      setLoading(false);
+    }
+  };
+  
+  fetchUserProfile();
+}, []);
+
+  // Ajouter une condition de chargement
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);

@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import api from '../services/api';
 
 // Définir les rôles possibles
 export const ROLES = {
@@ -14,7 +14,7 @@ const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: [
     'viewDashboard', 'viewCourses', 'editCourse', 'deleteCourse',
     'viewQCM', 'editQCM', 'deleteQCM',
-    'viewExams',  'editExam', 'deleteExam',
+    'viewExams', 'editExam', 'deleteExam',
     'viewCertificates', 'createCertificate', 'viewStatistics',
     'manageUsers', 'viewSystemSettings'
   ],
@@ -36,97 +36,162 @@ const AuthContext = createContext();
 
 // Hook personnalisé pour utiliser le contexte d'authentification
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  
+  // Vérifier si le contexte est utilisé dans un AuthProvider
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  
+  return context;
 }
 
-// Fournisseur du contexte d'authentification
+// Fournisseur du contexte
 export function AuthProvider({ children }) {
-  // État pour stocker les informations de l'utilisateur connecté
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initialiser l'état de l'utilisateur au chargement
+  // Configuration des intercepteurs axios pour ajouter le token aux requêtes
+  const setupAuthInterceptor = (token) => {
+    api.interceptors.request.use(
+      (config) => {
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+  };
+
+  // Récupérer l'utilisateur connecté au chargement
   useEffect(() => {
-    // Vérifier s'il y a un utilisateur stocké dans localStorage
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (storedUser && token) {
-      // Définir l'utilisateur courant
-      setCurrentUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUser({
+          ...parsedUser,
+          permissions: ROLE_PERMISSIONS[parsedUser.role] || []
+        });
+        setupAuthInterceptor(token);
+      } catch (error) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
-    
+
     setLoading(false);
   }, []);
 
-  // Fonction de connexion
-  const login = (userData, role) => {
-    try {
-      // Vérifier si le rôle est valide
-      if (!Object.values(ROLES).includes(role)) {
-        console.error("Rôle non valide:", role);
-        return false;
-      }
-      
-      // Mettre à jour l'état de l'utilisateur
-      const userWithPermissions = {
-        ...userData,
-        role,
-        permissions: ROLE_PERMISSIONS[role] || []
-      };
-      
-      setCurrentUser(userWithPermissions);
-      
-      // Stocker l'utilisateur dans localStorage
-      localStorage.setItem('user', JSON.stringify(userWithPermissions));
-      
-      return true;
-    } catch (error) {
-      console.error("Erreur lors de la connexion:", error);
-      return false;
-    }
-  };
+// Fonction de connexion
+const login = async (userData, role) => {
+  try {
+    setLoading(true);
+    setError(null);
 
+    // Ajouter les permissions basées sur le rôle
+    const userWithPermissions = {
+      ...userData,
+      permissions: ROLE_PERMISSIONS[role] || []
+    };
+
+    // Mettre à jour l'état
+    setCurrentUser(userWithPermissions);
+    
+    // Configurer l'intercepteur avec le token déjà stocké dans localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      setupAuthInterceptor(token);
+    }
+
+    return userWithPermissions;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'Erreur de connexion';
+    setError(errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
   // Fonction de déconnexion
   const logout = () => {
     // Supprimer les informations de l'utilisateur et le token
-    localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     
-    // Réinitialiser l'état de l'utilisateur
+    // Réinitialiser l'état et supprimer l'intercepteur
     setCurrentUser(null);
     
-    return true;
+    // Supprimer l'intercepteur axios
+    api.interceptors.request.clear();
+  };
+
+  // Mettre à jour le profil utilisateur
+  const updateProfile = async (userData) => {
+    try {
+      const response = await api.put('/api/users/profile', userData);
+      
+      // Mettre à jour l'utilisateur dans le contexte et localStorage
+      const updatedUser = { 
+        ...currentUser, 
+        ...response.data,
+        permissions: currentUser.permissions // Conserver les permissions
+      };
+      
+      setCurrentUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return updatedUser;
+    } catch (error) {
+      setError(error.response?.data?.message || 'Erreur de mise à jour du profil');
+      throw error;
+    }
   };
 
   // Vérifier si l'utilisateur a un rôle spécifique
   const hasRole = (role) => {
-    return currentUser && currentUser.role === role;
+    return currentUser?.role === role;
   };
 
   // Vérifier si l'utilisateur a une permission spécifique
   const hasPermission = (permission) => {
-    return currentUser && currentUser.permissions && 
-           currentUser.permissions.includes(permission);
+    return currentUser?.permissions?.includes(permission) || false;
   };
 
-  // Valeurs à fournir via le contexte
+  // Vérifier les rôles spécifiques
+  const isAdmin = () => hasRole(ROLES.ADMIN);
+  const isTeacher = () => hasRole(ROLES.TEACHER);
+  const isStudent = () => hasRole(ROLES.STUDENT);
+
+  // Vérifier si l'utilisateur est authentifié
+  const isAuthenticated = () => !!currentUser;
+
+  // Valeur du contexte
   const value = {
     currentUser,
+    loading,
+    error,
     login,
     logout,
+    updateProfile,
     hasRole,
     hasPermission,
-    ROLES, // Exporter les constantes de rôles
-    isAdmin: () => hasRole(ROLES.ADMIN),
-    isTeacher: () => hasRole(ROLES.TEACHER),
-    isStudent: () => hasRole(ROLES.STUDENT),
-    isAuthenticated: () => !!currentUser
+    isAdmin,
+    isTeacher,
+    isStudent,
+    isAuthenticated,
+    ROLES // Ajouter les rôles pour pouvoir les utiliser dans d'autres composants
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }
+
+export default AuthContext;
