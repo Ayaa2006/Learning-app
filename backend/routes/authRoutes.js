@@ -88,32 +88,36 @@ router.post('/login/student', async (req, res) => {
       console.log('Date de naissance incorrecte');
       return res.status(401).json({ message: 'Identifiants incorrects' });
     }
+    
     user.lastLogin = new Date();
     await user.save();
     
+    // Créer un token JWT avec le rôle exact de l'utilisateur
+    const payload = { 
+      id: user._id, 
+      email: user.email, 
+      role: user.role  // Utiliser le rôle réel de l'utilisateur
+    };
+    console.log("PAYLOAD DU TOKEN:", payload);
     
-  // Créer un token JWT - AJOUTEZ CE LOG DE DÉBOGAGE
-  const payload = { id: user._id, email: user.email, role: 'STUDENT' };
-  console.log("PAYLOAD DU TOKEN:", payload);
-  
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
-  
-  console.log('Token généré pour:', user.name);
-  
-  res.json({
-    success: true,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: 'STUDENT'
-    },
-    token
-  });
-} catch (error) {
-  console.error('Erreur de connexion étudiant:', error);
-  res.status(500).json({ message: 'Erreur serveur' });
-}
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+    
+    console.log('Token généré pour:', user.name);
+    
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role  // Renvoyer le rôle exact
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Erreur de connexion étudiant:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
 });
 
 // Route pour déconnecter un utilisateur (juste pour la cohérence de l'API)

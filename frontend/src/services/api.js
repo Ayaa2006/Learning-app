@@ -75,6 +75,50 @@ export const adminService = {
   // Certificats
   getCertificates: () => api.get('/admin/certificates')
 };
+// Service pour les modules de cours
+export const moduleService = {
+  getAllModules: () => api.get('/modules'),
+  getModuleById: (moduleId) => api.get(`/modules/${moduleId}`),
+  getUserModules: () => api.get('/modules/user'),
+  startModule: (moduleId) => api.post(`/modules/${moduleId}/start`),
+};
+
+// Service pour les cours
+export const courseService = {
+  getCourseById: (courseId) => api.get(`/courses/${courseId}`),
+  startCourse: (courseId) => api.post(`/courses/${courseId}/start`),
+  completeCourse: (courseId) => api.post(`/courses/${courseId}/complete`),
+};
+
+// Service pour les QCM
+export const quizService = {
+  getQuizById: (quizId) => api.get(`/quizzes/${quizId}`),
+  startQuiz: (quizId) => api.post(`/quizzes/${quizId}/start`),
+  submitQuiz: (quizId, answers) => api.post(`/quizzes/${quizId}/submit`, { answers }),
+  getQuizResult: (quizId) => api.get(`/quizzes/${quizId}/result`),
+};
+
+// Service pour les examens finaux
+export const examService = {
+  getExamById: (examId) => api.get(`/exams/${examId}`),
+  startExam: (examId) => api.post(`/exams/${examId}/start`),
+  submitExam: (examId, answers) => api.post(`/exams/${examId}/submit`, { answers }),
+  getExamResult: (examId) => api.get(`/exams/${examId}/result`),
+};
+
+// Service pour la progression de l'utilisateur
+export const progressService = {
+  getUserProgress: () => api.get('/progress'),
+  getModuleProgress: (moduleId) => api.get(`/progress/module/${moduleId}`),
+};
+
+// Service pour les certificats
+export const certificateService = {
+  getUserCertificates: () => api.get('/certificates'),
+  getCertificateById: (certificateId) => api.get(`/certificates/${certificateId}`),
+};
+
+
 
 
 export default api;

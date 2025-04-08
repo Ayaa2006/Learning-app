@@ -130,23 +130,32 @@ const StudentDashboard = () => {
 
   // Effet pour charger les données du profil
   useEffect(() => {
-  const fetchUserProfile = async () => {
-    try {
-      // S'assurer que le token est ajouté aux en-têtes
-      const token = localStorage.getItem('token');
-      if (token) {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          // Rediriger vers la page de connexion si pas de token
+          navigate('/login');
+          return;
+        }
+  
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      }
-      
-      console.log("Récupération du profil...");
-      const response = await axios.get('/api/users/profile');
-      console.log("Données reçues:", response.data);
-      
-      if (response.data) {
-        // Adapter les données reçues au format attendu
+        
+        console.log("Récupération du profil...");
+        const response = await axios.get('/api/users/profile');
+        console.log("Données reçues:", response.data);
+        
+        if (!response.data) {
+          // Gérer le cas où aucune donnée n'est retournée
+          console.error('Aucune donnée utilisateur récupérée');
+          navigate('/login');
+          return;
+        }
+  
+        // Mise à jour avec les données réelles
         const userData = {
-          name: response.data.name || "",
-          email: response.data.email || "",
+          name: response.data.name, // Supprimer les valeurs par défaut
+          email: response.data.email,
           phone: response.data.phone || "+33 6 12 34 56 78",
           avatar: "/images/avatar.jpg",
           language: response.data.language || "Français",
@@ -214,25 +223,27 @@ const StudentDashboard = () => {
         
        
         setStudentData(userData);
-        
-        // Mettre à jour userInfo
-        setUserInfo({
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          language: userData.language
-        });
-      }
+      setUserInfo({
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        language: userData.language
+      });
       
       setLoading(false);
     } catch (error) {
       console.error('Erreur lors de la récupération du profil:', error);
+      // Gérer différents types d'erreurs
+      if (error.response && error.response.status === 401) {
+        // Token invalide, rediriger vers la connexion
+        navigate('/login');
+      }
       setLoading(false);
     }
   };
   
   fetchUserProfile();
-}, []);
+}, [navigate]);
 
   // Ajouter une condition de chargement
   if (loading) {

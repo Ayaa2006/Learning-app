@@ -37,7 +37,12 @@ import CreateQCM from "./pages/CreateQCM";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import UsersManagement from './pages/admin/UsersManagement';
 import AdminProfile from './pages/admin/AdminProfile';
+import Course from './pages/Course';
 
+
+
+// Layout et composants
+import Layout from './components/Layout';
 // Configuration d'Axios pour les requêtes API
 axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -131,14 +136,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              <Route 
-                path="/progress" 
-                element={
-                  <ProtectedRoute>
-                    <Progress toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-                  </ProtectedRoute>
-                } 
-              />
+             
               <Route 
                 path="/certificate" 
                 element={
